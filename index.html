@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0e13">
+<title>RUSTFORGE v2 — from cargo new to sensor-fusion robotics</title>
+<meta name="description" content="Gamified Rust academy v2: in-browser compiler with tests, combos, daily drills, Kalman filters and AI robotics.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🦀</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;900&family=IBM+Plex+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg0:#0b0e13;--panel:#131a24;--panel2:#0d1117;--line:#26303e;--ink:#e9eef5;--dim:#96a3b5;--faint:#5f6d80;
+--ember:#ff6b2c;--ember-dk:#c94f1d;--gold:#ffb347;--teal:#3ec9b0;--ok:#3ecf8e;--err:#ff5d5d;
+--disp:'Bitter',Georgia,serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg0);color:var(--ink);font-family:var(--body);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-3;background:linear-gradient(180deg,#0c1017,#0b0e13 40%,#0a0d12)}
+body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.5;background:
+ repeating-linear-gradient(0deg,transparent 0 47px,#ffffff06 47px 48px),
+ repeating-linear-gradient(90deg,transparent 0 47px,#ffffff06 47px 48px),
+ radial-gradient(1200px 600px at 80% -10%,#ff6b2c12,transparent 60%),
+ radial-gradient(900px 500px at -10% 110%,#3ec9b00d,transparent 60%)}
+#fx{position:fixed;inset:0;z-index:-1;pointer-events:none}
+::selection{background:#ff6b2c55}
+button{font-family:inherit;cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.hud{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:9px 18px;
+ background:linear-gradient(180deg,#141a23f5,#0f141cf5);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.logo svg{width:29px;height:29px;animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wordmark{font-family:var(--disp);font-weight:900;font-size:19px;letter-spacing:.04em}.wordmark b{color:var(--ember)}
+.spacer{flex:1}
+.lvlchip{display:flex;flex-direction:column;gap:4px;min-width:190px}
+.lvlchip .row{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.1em;color:var(--dim);font-family:var(--mono)}
+.lvlchip .row b{color:var(--gold)}
+.xpbar{height:9px;background:#1a2230;border:1px solid #2c3a4f;overflow:hidden}
+.xpbar i{display:block;height:100%;width:0%;transition:width .6s cubic-bezier(.2,.8,.2,1);
+ background:repeating-linear-gradient(45deg,var(--ember) 0 8px,var(--ember-dk) 8px 16px);animation:stripes 3s linear infinite}
+@keyframes stripes{to{background-position:-32px 0}}
+.combo{display:flex;align-items:center;gap:7px;font-family:var(--mono)}
+.combo #comboX{font-size:13px;color:var(--faint);transition:.3s}
+.combo.hot #comboX{color:var(--gold);text-shadow:0 0 12px #ffb34788}
+.cbar{width:70px;height:7px;background:#1a2230;border:1px solid #2c3a4f}
+.cbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--ember),var(--gold));transition:width .35s}
+.streak{font-family:var(--mono);font-size:13px;color:var(--gold);white-space:nowrap}
+.iconbtn{background:#1b2432;border:1px solid var(--line);color:var(--dim);padding:7px 11px;font-size:14px;transition:.18s}
+.iconbtn:hover{color:var(--ink);border-color:#4a5b73;transform:translateY(-1px)}
+@media(max-width:860px){.cbar{display:none}.lvlchip{min-width:120px}}
+
+.btn{font-family:var(--disp);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:#fff;
+ background:linear-gradient(180deg,#ff7d42,#e05a1f);border:1px solid #ff9a63;padding:11px 22px;
+ clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+ box-shadow:0 4px 0 #8a3512,0 8px 18px #ff6b2c33;transition:.15s}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #8a3512}
+.btn.ghost{background:#1b2432;border:1px solid var(--line);box-shadow:0 4px 0 #0a0e14;color:var(--dim)}
+.btn.ghost:hover{color:var(--ink);border-color:#4a5b73}
+.btn.sm{padding:7px 14px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+#boot{position:fixed;inset:0;z-index:100;background:#05070b;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+#boot::before{content:"";position:absolute;inset:0;background:radial-gradient(800px 400px at 50% 0%,#ff6b2c14,transparent 70%),repeating-linear-gradient(0deg,transparent 0 3px,#00000055 3px 4px)}
+.bootcol{position:relative;max-width:860px;width:100%}
+.term{background:#0a0d12;border:1px solid #223042;box-shadow:0 30px 80px #000a}
+.termbar{display:flex;gap:7px;align-items:center;padding:10px 14px;border-bottom:1px solid #1c2634;background:#0d1219}
+.termbar i{width:11px;height:11px;border-radius:50%;background:#3a4657}
+.termbar i:first-child{background:#ff5d5d}.termbar i:nth-child(2){background:#ffb347}.termbar i:nth-child(3){background:#3ecf8e}
+.termbar span{margin-left:10px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.termbody{padding:18px 20px;font-family:var(--mono);font-size:13.5px;line-height:1.8;min-height:250px;color:#c8d4e2}
+.termbody .err{color:var(--err)}.termbody .ok{color:var(--ok)}.termbody .help{color:var(--gold)}
+.caret{display:inline-block;width:9px;height:16px;background:var(--ember);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.boottitle{text-align:center;margin-top:40px;opacity:0;transform:translateY(14px);transition:.8s cubic-bezier(.2,.8,.2,1)}
+.boottitle.on{opacity:1;transform:none}
+.boottitle h1{font-family:var(--disp);font-weight:900;font-size:clamp(44px,9vw,88px);line-height:1}
+.boottitle h1 b{color:var(--ember)}
+.boottitle .bar{width:150px;height:5px;background:var(--ember);margin:16px auto}
+.boottitle p{color:var(--dim);font-size:clamp(14px,2vw,17px);max-width:640px;margin:0 auto 8px}
+.bootstats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0 26px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--faint)}
+.bootstats em{color:var(--gold);font-style:normal}
+.skipboot{position:absolute;top:14px;right:14px;background:none;border:1px solid #2a3648;color:var(--faint);font-family:var(--mono);font-size:11px;padding:5px 10px}
+.skipboot:hover{color:var(--ink)}
+
+.mapwrap{max-width:1120px;margin:0 auto;padding:28px 20px 90px}
+.maphead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.maphead h2{font-family:var(--disp);font-weight:900;font-size:clamp(26px,4vw,40px)}
+.maphead h2 span{color:var(--ember)}
+.maphead .sub{color:var(--dim);margin-top:6px;max-width:600px;line-height:1.6}
+.overall{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;line-height:1.9}
+.overall b{color:var(--gold)}
+
+.dash{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:16px;margin:24px 0}
+@media(max-width:820px){.dash{grid-template-columns:1fr}}
+.drillcard{border:1px solid #8a4a22;background:linear-gradient(160deg,#1c1208,#120d08);padding:18px;
+ clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);position:relative;overflow:hidden}
+.drillcard::after{content:"";position:absolute;inset:0;background:radial-gradient(300px 120px at 20% 0%,#ff6b2c18,transparent);pointer-events:none}
+.drillcard h3{font-family:var(--disp);font-weight:900;letter-spacing:.14em;font-size:15px;color:var(--ember)}
+.drillcard .dd{font-family:var(--mono);font-size:11px;color:var(--faint);margin:4px 0 10px;letter-spacing:.1em}
+.drillcard p{color:#d8c6b2;font-size:13.5px;line-height:1.6;margin-bottom:14px}
+.drillcard.done{border-color:#2f9e6e}.drillcard.done h3{color:var(--ok)}
+.statcard{border:1px solid var(--line);background:linear-gradient(180deg,#121927,#0d121b);padding:16px 18px}
+.statcard h4{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--faint);margin-bottom:10px}
+.heatmap{display:flex;gap:3px;overflow-x:auto;padding-bottom:6px}
+.hcol{display:flex;flex-direction:column;gap:3px}
+.hc{width:11px;height:11px;background:#161d29;border:1px solid #1e2836}
+.hc.l1{background:#5c3416}.hc.l2{background:#a04f16}.hc.l3{background:#e06a20}.hc.l4{background:#ff9550;border-color:#ff9550}
+.statrow{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.statrow b{color:var(--teal);font-size:15px;display:block}
+.statrow .io{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mini{background:#1b2432;border:1px solid var(--line);color:var(--dim);font-family:var(--mono);font-size:10.5px;padding:6px 10px;letter-spacing:.1em}
+.mini:hover{color:var(--ink);border-color:#4a5b73}
+
+.zone{margin:26px 0;border:1px solid #222d3c;background:linear-gradient(180deg,#121927,#0d121b);
+ clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%)}
+.zone.locked{opacity:.55;filter:saturate(.5)}
+.zonehead{display:flex;align-items:center;gap:16px;padding:15px 20px;border-bottom:1px solid #1e2836;background:#0e141d}
+.rk{font-family:var(--disp);font-weight:900;font-size:33px;color:transparent;-webkit-text-stroke:1.5px #4a5b73;min-width:56px}
+.zone.current .rk{-webkit-text-stroke:1.5px var(--ember);color:#ff6b2c22}
+.zonehead .zt h3{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.06em}
+.zonehead .zt p{color:var(--dim);font-size:13px;margin-top:2px}
+.zprog{margin-left:auto;text-align:right;font-family:var(--mono);font-size:12px;color:var(--faint)}
+.zprog b{color:var(--teal)}
+.zprog .zb{width:120px;height:6px;background:#1a2230;border:1px solid #2c3a4f;margin-top:6px}
+.zprog .zb i{display:block;height:100%;background:var(--teal)}
+.zstamp{font-family:var(--mono);font-size:10px;color:var(--ok);letter-spacing:.2em}
+.nodes{display:flex;flex-wrap:wrap;gap:14px;padding:18px}
+.node{width:176px;min-height:86px;border:1px solid #2b3850;background:linear-gradient(180deg,#182130,#121927);
+ clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+ padding:12px 14px;text-align:left;color:var(--ink);position:relative;transition:.18s}
+.node .nic{font-size:19px}
+.node .nn{display:block;font-family:var(--disp);font-weight:700;font-size:13.5px;line-height:1.3;margin-top:6px}
+.node .nx{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:5px;letter-spacing:.08em}
+.node:hover{transform:translateY(-3px)}
+.node.done{border-color:#2f9e6e}.node.done .nn{color:#9fe8c6}
+.node.done::after{content:"✓";position:absolute;top:8px;right:12px;color:var(--ok);font-weight:700}
+.node.open{border-color:var(--ember);animation:pulse 2.2s ease-in-out infinite}
+.node.open::before{content:"NEXT";position:absolute;top:-1px;right:-1px;background:var(--ember);color:#1a0d05;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.15em;padding:2px 7px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #ff6b2c44}50%{box-shadow:0 0 22px 2px #ff6b2c33}}
+.node.lock{cursor:not-allowed;opacity:.5}.node.lock:hover{transform:none}
+.node.boss{border-color:#a83b3b;background:linear-gradient(180deg,#2a1620,#160d13)}
+.node.boss .nn{color:#ffb3b3}.node.boss.done{border-color:#2f9e6e}.node.boss.done .nn{color:#9fe8c6}
+
+.lesson{max-width:840px;margin:0 auto;padding:26px 20px 100px;animation:fadein .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes fadein{from{opacity:0;transform:translateY(14px)}}
+.crumbs{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;color:var(--faint);margin-bottom:14px}
+.crumbs a{color:var(--teal);cursor:pointer}
+.lhead h1{font-family:var(--disp);font-weight:900;font-size:clamp(28px,5vw,46px);line-height:1.12}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 22px}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:4px 11px;border:1px solid var(--line);color:var(--dim);background:#141b26}
+.chip.gold{color:var(--gold);border-color:#8a6a2f55}.chip.ember{color:var(--ember);border-color:#ff6b2c44}
+.bossbar{border:1px solid #5c2330;background:#160d13;padding:10px 14px;margin-bottom:24px}
+.bossbar .bl{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:#ff9b9b;margin-bottom:8px}
+.bossbar .segs{display:flex;gap:5px}
+.bossbar .seg{flex:1;height:12px;background:#2a1620;border:1px solid #5c2330;transition:.4s}
+.bossbar .seg.hit{background:linear-gradient(180deg,#ff7d42,#c94f1d);border-color:#ff9a63;box-shadow:0 0 10px #ff6b2c66}
+.lesson p.tx{font-size:16.5px;line-height:1.75;color:#ccd6e2;margin:0 0 16px}
+.lesson p.tx code,.lesson li code,.qp code{font-family:var(--mono);font-size:.86em;background:#1d2634;border:1px solid #2c3a4d;padding:1px 6px;color:#ffd9a0;white-space:nowrap}
+.lesson h3{font-family:var(--disp);font-weight:700;font-size:22px;margin:30px 0 12px;padding-left:12px;border-left:4px solid var(--ember)}
+.lesson ul.txlist{margin:0 0 16px 4px;list-style:none}
+.lesson ul.txlist li{padding:6px 0 6px 24px;position:relative;color:#ccd6e2;line-height:1.65}
+.lesson ul.txlist li::before{content:"▸";position:absolute;left:4px;color:var(--ember)}
+.codeblk{border:1px solid #263243;background:var(--panel2);margin:0 0 18px;box-shadow:0 10px 30px #0006}
+.codebar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#111823;border-bottom:1px solid #202b3b;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.codebar .dot{width:9px;height:9px;border-radius:50%}
+.codebar .dot.r{background:#ff5d5d}.codebar .dot.y{background:#ffb347}.codebar .dot.g{background:#3ecf8e}
+.codebar .tag{color:var(--ember);letter-spacing:.15em}
+.codebar .spacer{flex:1}
+.copybtn{background:none;border:1px solid #2a3648;color:var(--faint);font-family:var(--mono);font-size:10px;padding:3px 9px;letter-spacing:.1em}
+.copybtn:hover{color:var(--ink);border-color:#4a5b73}
+.codeblk pre{padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#d7e2f0}
+.note{display:flex;gap:12px;padding:14px 16px;margin:0 0 18px;border-left:3px solid;font-size:14.5px;line-height:1.65}
+.note.tip{border-color:var(--teal);background:#0f1b1dcc;color:#bfe8de}
+.note.warn{border-color:var(--err);background:#1f1114cc;color:#f2c4c4}
+.note.boss{border-color:var(--gold);background:#1f180dcc;color:#f0dcb2}
+.kw{color:#ff8f5e;font-weight:600}.str{color:#a8d08d}.com{color:#66788d;font-style:italic}.num{color:#ffd27d}.ty{color:#8fd0ff}.mac{color:#57d9c2}
+
+.quest{border:1px solid #2b3648;background:#10161f;margin:0 0 22px;position:relative;
+ clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);transition:border-color .3s}
+.quest.solved{border-color:#2f9e6e}
+.quest.solved::after{content:"✓ SOLVED";position:absolute;top:0;right:0;background:#14532d;color:#8ff0b8;font-family:var(--mono);font-size:10px;letter-spacing:.2em;padding:4px 10px}
+.qhead{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #1d2735;background:#0d131c}
+.qtag{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.22em;color:var(--ember)}
+.qxp{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--gold)}
+.qbody{padding:16px}
+.qp{color:#c4cfdd;line-height:1.65;margin-bottom:12px;font-size:15px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.opt{text-align:left;background:#161e2b;border:1px solid #26324a;color:#c9d4e2;padding:10px 14px;font-size:14px;line-height:1.5;transition:.15s;font-family:var(--mono)}
+.opt:hover{border-color:#4a5b73;transform:translateX(3px)}
+.opt.sel{border-color:var(--ember);background:#241611;color:#ffd9c2}
+.opt.right{border-color:var(--ok);background:#0f2418;color:#b9f0d3}
+.opt.wrong{border-color:var(--err);background:#241014;color:#ffb9b9}
+.qrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hintbtn{background:none;border:none;color:var(--faint);font-family:var(--mono);font-size:12px;text-decoration:underline dotted}
+.hintbtn:hover{color:var(--gold)}
+.hint{margin-top:12px;padding:10px 14px;border-left:3px solid var(--gold);background:#1c160a;color:#ecd9a8;font-size:13.5px;line-height:1.6}
+.feed{margin-top:12px;font-family:var(--mono);font-size:13px;padding:10px 14px}
+.feed.bad{background:#241014;color:#ffb9b9;border:1px solid #5c2330}
+.feed.good{background:#0f2418;color:#b9f0d3;border:1px solid #1f5c3a}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.fillcode{font-family:var(--mono);font-size:13.5px;line-height:1.9;background:var(--panel2);border:1px solid #263243;padding:14px 16px;margin-bottom:12px;white-space:pre-wrap;color:#d7e2f0}
+.blankin{font-family:var(--mono);font-size:13px;background:#1c1408;border:1px dashed var(--gold);color:var(--gold);padding:2px 8px;width:120px;outline:none}
+.blankin:focus{border-style:solid;background:#241a08}
+.blankin.right{border-color:var(--ok);color:#8ff0b8;border-style:solid}
+.blankin.wrong{border-color:var(--err);color:#ffb9b9}
+.predin{width:100%;font-family:var(--mono);font-size:14px;background:var(--panel2);border:1px solid #263243;color:#d7e2f0;padding:11px 13px;outline:none;margin-bottom:12px}
+.predin:focus{border-color:var(--ember)}
+.editor{width:100%;min-height:160px;font-family:var(--mono);font-size:13.5px;line-height:1.6;background:#0a0e14;border:1px solid #263243;color:#dce7f2;padding:13px 15px;outline:none;resize:vertical;tab-size:4}
+.editor:focus{border-color:#4a5b73}
+.console{font-family:var(--mono);font-size:13px;background:#000;padding:12px 15px;border:1px solid #263243;border-top:none;white-space:pre-wrap;min-height:20px;color:#9ff0b8;max-height:260px;overflow:auto}
+.console .ce{color:#ff7b72}.console .cd{color:#5f6d80}.console .ct{color:#8fd0ff}
+.ordpool,.ordans{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;padding:10px;border:1px dashed #2c3a4f;margin-bottom:10px}
+.ordans{border-color:#8a6a2f88;background:#171307}
+.ordchip{font-family:var(--mono);font-size:12.5px;background:#1a2331;border:1px solid #33415a;color:#cfdaf0;padding:6px 11px;transition:.12s}
+.ordchip:hover{border-color:var(--ember);transform:translateY(-2px)}
+.ordans .ordchip{background:#2a2008;border-color:#8a6a2f;color:#ffe0a8}
+.ordlbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--faint);margin-bottom:5px}
+.lfoot{display:flex;justify-content:space-between;gap:12px;margin-top:46px;flex-wrap:wrap}
+
+#toasts{position:fixed;bottom:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#141c28;border:1px solid #33415a;border-left:3px solid var(--ember);padding:11px 16px;font-family:var(--mono);font-size:13px;box-shadow:0 12px 30px #000a;animation:tin .35s cubic-bezier(.2,.8,.2,1);max-width:330px}
+.toast.gold{border-left-color:var(--gold)}.toast.green{border-left-color:var(--ok)}
+.toast b{color:var(--gold)}
+@keyframes tin{from{opacity:0;transform:translateX(30px)}}
+.spark{position:fixed;z-index:300;width:7px;height:7px;pointer-events:none;background:var(--gold)}
+.modal{position:fixed;inset:0;z-index:150;background:#05070bdd;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal .box{background:#111823;border:1px solid #2b3648;max-width:680px;width:100%;max-height:84vh;overflow:auto;padding:24px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%)}
+.modal h3{font-family:var(--disp);font-weight:900;font-size:24px;margin-bottom:16px}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.bdg{border:1px solid #26324a;padding:12px;background:#0d131c}
+.bdg .bi{font-size:22px}.bdg .bn{font-family:var(--disp);font-weight:700;font-size:13px;margin-top:6px}
+.bdg .bd2{font-size:11.5px;color:var(--faint);margin-top:3px;line-height:1.5}
+.bdg.off{opacity:.35;filter:grayscale(1)}
+.bdg.on{border-color:#8a6a2f}.bdg.on .bn{color:var(--gold)}
+#bossOverlay{position:fixed;inset:0;z-index:250;background:#05070bee;display:flex;align-items:center;justify-content:center;text-align:center}
+#bossOverlay .vic h2{font-family:var(--disp);font-weight:900;font-size:clamp(34px,7vw,64px);color:var(--gold);text-shadow:0 0 40px #ffb34755;animation:fadein .6s}
+#bossOverlay .vic p{color:var(--dim);margin:14px 0 26px;font-family:var(--mono);letter-spacing:.1em}
+#bossOverlay .vic .big{font-size:64px;animation:spin 6s linear infinite;display:inline-block}
+footer{padding:30px 20px 50px;text-align:center;color:var(--faint);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.3s}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<div id="boot">
+  <button class="skipboot" id="skipBoot">SKIP ▸</button>
+  <div class="bootcol">
+    <div class="term" aria-hidden="true">
+      <div class="termbar"><i></i><i></i><i></i><span>ferris@rustforge: ~/you</span></div>
+      <div class="termbody" id="termBody"></div>
+    </div>
+    <div class="boottitle" id="bootTitle">
+      <h1>RUST<b>FORGE</b></h1>
+      <div class="bar"></div>
+      <p>Learn Rust like a game — from your first <code style="color:var(--gold)">cargo new</code> to PhD-grade <b style="color:var(--teal)">sensor-fusion robotics</b> and <b style="color:var(--gold)">AI</b>. Now with an in-browser compiler that runs your tests.</p>
+      <div class="bootstats" id="bootStats"></div>
+      <button class="btn" id="beginBtn">▶ Initialize training</button>
+      <p style="margin-top:14px;font-size:12px;color:var(--faint);font-family:var(--mono)">offline-ready PWA · progress saved locally · no account</p>
+    </div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header class="hud">
+    <div class="logo" id="logoHome" title="Forge Map">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 1.5l1.8 2.6 3-.9.9 3 2.8 1.2-.6 3.1 2.1 2.3-2.1 2.3.6 3.1-2.8 1.2-.9 3-3-.9L12 22.5l-1.8-2.6-3 .9-.9-3-2.8-1.2.6-3.1L2 10.2l2.1-2.3-.6-3.1 2.8-1.2.9-3 3 .9L12 1.5z" stroke="#ff6b2c" stroke-width="1.4"/><circle cx="12" cy="12" r="3.4" stroke="#ffb347" stroke-width="1.4"/></svg>
+      <span class="wordmark">RUST<b>FORGE</b></span>
+    </div>
+    <div class="spacer"></div>
+    <div class="lvlchip">
+      <div class="row"><span id="lvlName">LVL 1</span><b id="xpTxt">0 XP</b></div>
+      <div class="xpbar"><i id="xpFill"></i></div>
+    </div>
+    <div class="combo" id="comboBox" title="Combo multiplier — chain correct answers"><span id="comboX">×1.0</span><div class="cbar"><i id="comboFill"></i></div></div>
+    <div class="streak" id="streakTxt" title="Daily streak">🔥 0</div>
+    <button class="iconbtn" id="badgesBtn" title="Badges" aria-label="Badges">🏅</button>
+    <button class="iconbtn" id="soundBtn" title="Sound" aria-label="Toggle sound">🔊</button>
+    <button class="iconbtn" id="resetBtn" title="Reset progress" aria-label="Reset progress">⟲</button>
+  </header>
+
+  <main id="mapView" class="mapwrap"></main>
+  <main id="lessonView" hidden></main>
+  <footer>RUSTFORGE v2 · engine + content split · PWA · rustc-in-browser is a teaching subset — keep real <span style="color:var(--ember)">rustc</span> installed</footer>
+</div>
+
+<div id="toasts"></div>
+<div class="modal" id="badgeModal" hidden><div class="box">
+  <h3>🏅 Trophy Shelf</h3><div class="bgrid" id="bgrid"></div>
+  <div style="margin-top:18px;text-align:right"><button class="btn ghost sm" id="closeBadges">CLOSE</button></div>
+</div></div>
+<div class="modal" id="drillModal" hidden><div class="box" id="drillBox"></div></div>
+<div id="bossOverlay" hidden><div class="vic">
+  <div class="big">🏆</div>
+  <h2 id="vicTitle">BOSS DEFEATED</h2>
+  <p id="vicSub">+150 XP BONUS</p>
+  <button class="btn" id="vicBtn">CONTINUE ▸</button>
+</div></div>
+
+<script src="content.js"></script>
+<script type="module">
+"use strict";
+/* ================= utils ================= */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const hash=s=>{let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)};
+const todayStr=()=>new Date().toISOString().slice(0,10);
+function shuf(a,seed){a=a.slice();let s=seed||1;const r=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function toast(msg,cls=''){const t=document.createElement('div');t.className='toast '+cls;t.innerHTML=msg;
+ $('#toasts').appendChild(t);$('#live').textContent=t.textContent;
+ setTimeout(()=>{t.style.opacity='0';t.style.transition='.4s';setTimeout(()=>t.remove(),400)},3400)}
+function sparks(x,y,n=16){if(RM)return;const cols=['#ff6b2c','#ffb347','#3ecf8e','#3ec9b0'];
+ for(let i=0;i<n;i++){const s=document.createElement('div');s.className='spark';s.style.left=x+'px';s.style.top=y+'px';
+  s.style.background=cols[i%4];document.body.appendChild(s);
+  const a=Math.random()*6.28,d=40+Math.random()*80;
+  s.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+30}px) scale(.2)`,opacity:0}],
+   {duration:600+Math.random()*350,easing:'cubic-bezier(.2,.8,.4,1)'}).onfinish=()=>s.remove()}}
+
+/* ================= sound ================= */
+let AC=null;
+function beep(kind,combo=0){if(!S.snd)return;
+ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  if(kind==='ok'){o.type='sine';o.frequency.setValueAtTime(500+combo*30,t);o.frequency.setValueAtTime(760+combo*40,t+.09);
+   g.gain.setValueAtTime(.11,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.start(t);o.stop(t+.32)}
+  else if(kind==='no'){o.type='square';o.frequency.setValueAtTime(130,t);g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.001,t+.24);o.start(t);o.stop(t+.25)}
+  else{o.type='triangle';[440,554,659,880].forEach((f,i)=>o.frequency.setValueAtTime(f,t+i*.11));
+   g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.62);o.start(t);o.stop(t+.64)}
+ }catch(e){}}
+
+/* ================= store ================= */
+const SKEY='rustforge2';
+const DEF={xp:0,done:{},badges:[],streak:{n:0,d:''},snd:1,days:{},drill:{d:'',n:0},bonus:{},best:0,right:0,wrong:0};
+let S={...DEF};
+try{const raw=localStorage.getItem(SKEY);if(raw)S={...DEF,...JSON.parse(raw)}}catch(e){}
+const save=()=>{try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}};
+let combo=0;
+const comboMult=()=>1+0.25*Math.min(combo,8);
+function updateComboUI(){const m=comboMult();$('#comboX').textContent='×'+m.toFixed(2).replace(/0$/,'');
+ $('#comboFill').style.width=(Math.min(combo,8)/8*100)+'%';$('#comboBox').classList.toggle('hot',combo>=4)}
+
+/* ================= RustLite v2 ================= */
+class RErr extends Error{constructor(m,l){super(m);this.line=l||0}}
+const KWS=['fn','let','mut','if','else','while','for','in','loop','return','true','false','break','continue','struct','match','as'];
+function lex(src){
+ const T=[];let i=0,line=1;const n=src.length;
+ const isD=c=>c>='0'&&c<='9',isA=c=>/[A-Za-z_]/.test(c),isAN=c=>/[A-Za-z0-9_]/.test(c);
+ while(i<n){const c=src[i];
+  if(c==='\n'){line++;i++;continue}
+  if(/\s/.test(c)){i++;continue}
+  if(c==='/'&&src[i+1]==='/'){while(i<n&&src[i]!=='\n')i++;continue}
+  if(c==='#'){i++;if(src[i]==='!')i++;if(src[i]==='['){let d=1;i++;while(i<n&&d>0){if(src[i]==='[')d++;else if(src[i]===']')d--;i++}}continue}
+  if(isD(c)){let j=i;while(j<n&&/[0-9_]/.test(src[j]))j++;
+   if(src[j]==='.'&&isD(src[j+1])){j++;while(j<n&&/[0-9_]/.test(src[j]))j++}
+   let f=src.slice(i,j).includes('.');let k=j,suf='';
+   while(k<n&&isAN(src[k])){suf+=src[k];k++}
+   if(/^f\d+$/.test(suf)){f=true;j=k}else if(/^[iu]\d+$/.test(suf))j=k;
+   T.push({t:'num',v:parseFloat(src.slice(i,j).replace(/_/g,'')),f,line});i=j;continue}
+  if(c==='"'){let j=i+1,s='';while(j<n&&src[j]!=='"'){if(src[j]==='\\'){j++;const e=src[j];s+=e==='n'?'\n':e==='t'?'\t':e==='"'?'"':e==='\\'?'\\':e}else s+=src[j];j++}
+   if(j>=n)throw new RErr('unterminated string literal',line);T.push({t:'str',v:s,line});i=j+1;continue}
+  if(c==="'"){
+   if(/[a-z]/.test(src[i+1]||'')&&src[i+2]!=="'"){let j=i+1;while(j<n&&isAN(src[j]))j++;T.push({t:'life',v:src.slice(i,j),line});i=j;continue}
+   let j=i+1;if(src[j]==='\\')j++;j++;T.push({t:'chr',v:src.slice(i+1,j).replace(/\\n/,'\n').replace(/\\t/,'\t'),line});i=j+1;continue}
+  if(isA(c)){let j=i;while(j<n&&isAN(src[j]))j++;const w=src.slice(i,j);T.push({t:KWS.includes(w)?'kw':'id',v:w,line});i=j;continue}
+  const three=src.substr(i,3),two=src.substr(i,2);
+  if(three==='..='){T.push({t:'op',v:'..=',line});i+=3;continue}
+  if(['==','!=','<=','>=','&&','||','+=','-=','*=','/=','%=','..','->','=>','::'].includes(two)){T.push({t:'op',v:two,line});i+=2;continue}
+  if('+-*/%<>=!&|.,;:(){}[]?'.includes(c)){T.push({t:'punc',v:c,line});i++;continue}
+  throw new RErr(`unexpected character \`${c}\``,line)}
+ T.push({t:'eof',v:'<eof>',line});return T}
+class Parser{
+ constructor(t){this.t=t;this.i=0}
+ peek(k=0){return this.t[Math.min(this.i+k,this.t.length-1)]}
+ next(){const x=this.t[this.i];if(this.i<this.t.length-1)this.i++;return x}
+ eat(t,v){const x=this.next();if(x.t!==t||x.v!==v)throw new RErr(`expected \`${v}\`, found \`${x.v}\``,x.line);return x}
+ skipTy(){let d=0;for(;;){const x=this.peek();if(x.t==='eof')return;
+  if(d===0){if((x.t==='punc'&&[',',')','=',';','{','}'].includes(x.v))||(x.t==='op'&&x.v==='->'))return}
+  if(x.t==='punc'&&['(','[','{'].includes(x.v))d++;
+  if(x.t==='punc'&&[')',']','}'].includes(x.v)){if(d===0)return;d--}
+  this.next()}}
+ prog(){const fns={},stmts=[];
+  while(this.peek().t!=='eof'){const x=this.peek();
+   if(x.t==='kw'&&x.v==='fn'){const f=this.pfn();fns[f.name]=f}
+   else if(x.t==='kw'&&x.v==='struct'){this.next();this.next();this.eat('punc','{');
+    while(!(this.peek().t==='punc'&&this.peek().v==='}')){if(this.peek().t==='eof')throw new RErr('unclosed struct',this.peek().line);
+     this.next();if(this.peek().v===':')this.next();this.skipTy();if(this.peek().v===',')this.next()}
+    this.eat('punc','}')}
+   else stmts.push(this.pstmt())}
+  return{fns,stmts}}
+ pfn(){this.eat('kw','fn');const nm=this.next().v;
+  if(this.peek().t==='punc'&&this.peek().v==='<'){let d=0;for(;;){const x=this.next();if(x.t==='eof')throw new RErr('unclosed generics',x.line);
+   if(x.v==='<')d++;if(x.v==='>'||x.v==='>>'){d-=x.v==='>>'?2:1;if(d<=0)break}}}
+  this.eat('punc','(');const params=[];
+  while(this.peek().v!==')'){if(this.peek().t==='eof')throw new RErr('unclosed fn params',this.peek().line);
+   if(this.peek().t==='kw'&&this.peek().v==='mut')this.next();
+   params.push({name:this.next().v,mut:false});
+   if(this.peek().v===':'){this.next();this.skipTy()}
+   if(this.peek().v===',')this.next()}
+  this.eat('punc',')');
+  if(this.peek().t==='op'&&this.peek().v==='->'){this.next();this.skipTy()}
+  return{name:nm,params,body:this.pblock()}}
+ pstmt(){const x=this.peek();
+  if(x.t==='kw'){
+   if(x.v==='let'){this.next();let mut=false;
+    if(this.peek().t==='kw'&&this.peek().v==='mut'){mut=true;this.next()}
+    const nm=this.next();if(nm.t!=='id')throw new RErr('expected identifier after `let`',nm.line);
+    if(this.peek().v===':'){this.next();this.skipTy()}
+    this.eat('op','=');const e=this.pexpr();this.eat('punc',';');
+    return{k:'let',name:nm.v,mut,e}}
+   if(x.v==='return'){this.next();let e=null;if(!(this.peek().t==='punc'&&this.peek().v===';'))e=this.pexpr();this.eat('punc',';');return{k:'ret',e}}
+   if(x.v==='break'){this.next();let e=null;if(!(this.peek().t==='punc'&&this.peek().v===';'))e=this.pexpr();this.eat('punc',';');return{k:'break',e}}
+   if(x.v==='continue'){this.next();this.eat('punc',';');return{k:'cont'}}}
+  const e=this.pexpr();
+  if(this.peek().t==='punc'&&this.peek().v===';'){this.next();return{k:'expr',e}}
+  return{k:'tail',e}}
+ pblock(){this.eat('punc','{');const s=[];
+  while(!(this.peek().t==='punc'&&this.peek().v==='}')){if(this.peek().t==='eof')throw new RErr('unclosed block `{`',this.peek().line);s.push(this.pstmt())}
+  this.eat('punc','}');return{k:'block',s}}
+ pexpr(){return this.passign()}
+ passign(){const l=this.prange();const x=this.peek();
+  if(x.t==='op'&&['=','+=','-=','*=','/=','%='].includes(x.v)){this.next();return{k:'assign',op:x.v,l,r:this.passign()}}
+  return l}
+ prange(){const a=this.por();const x=this.peek();
+  if(x.t==='op'&&(x.v==='..'||x.v==='..=')){this.next();return{k:'range',a,b:this.por(),incl:x.v==='..='}}
+  return a}
+ por(){let l=this.pand();while(this.peek().t==='op'&&this.peek().v==='||'){this.next();l={k:'bin',op:'||',l,r:this.pand()}}return l}
+ pand(){let l=this.peq();while(this.peek().t==='op'&&this.peek().v==='&&'){this.next();l={k:'bin',op:'&&',l,r:this.peq()}}return l}
+ peq(){let l=this.pcmp();while(this.peek().t==='op'&&(this.peek().v==='=='||this.peek().v==='!=')){const op=this.next().v;l={k:'bin',op,l,r:this.pcmp()}}return l}
+ pcmp(){let l=this.padd();while((this.peek().t==='punc'&&['<','>'].includes(this.peek().v))||(this.peek().t==='op'&&['<=','>='].includes(this.peek().v))){const op=this.next().v;l={k:'bin',op,l,r:this.padd()}}return l}
+ padd(){let l=this.pmul();while(this.peek().t==='punc'&&(this.peek().v==='+'||this.peek().v==='-')){const op=this.next().v;l={k:'bin',op,l,r:this.pmul()}}return l}
+ pmul(){let l=this.pun();while(this.peek().t==='punc'&&['*','/','%'].includes(this.peek().v)){const op=this.next().v;l={k:'bin',op,l,r:this.pun()}}return l}
+ pun(){const x=this.peek();
+  if(x.t==='punc'){
+   if(x.v==='-'||x.v==='!'){this.next();return{k:'un',op:x.v,e:this.pun()}}
+   if(x.v==='*'){this.next();return{k:'deref',e:this.pun()}}
+   if(x.v==='&'){this.next();if(this.peek().t==='kw'&&this.peek().v==='mut')this.next();return{k:'ref',e:this.pun()}}}
+  return this.ppost()}
+ ppost(){let e=this.pprim();
+  for(;;){const x=this.peek();
+   if(x.t==='punc'&&x.v==='.'){this.next();const m=this.next();
+    if(this.peek().t==='punc'&&this.peek().v==='('){this.next();e={k:'mcall',e,m:m.v,args:this.pargs(')')}}
+    else e={k:'mget',e,m:m.v}}
+   else if(x.t==='punc'&&x.v==='['){this.next();const idx=this.pexpr();this.eat('punc',']');e={k:'index',e,idx}}
+   else if(x.t==='kw'&&x.v==='as'){this.next();const t0=this.peek().v;this.skipAsTy();e={k:'cast',e,f:/^f/.test(String(t0))}}
+   else return e}}
+ skipAsTy(){let d=0;for(;;){const x=this.peek();if(x.t==='eof')return;
+  const ok=(x.t==='id'||x.v==='::'||x.v==='<'||x.v==='>'||x.v==='>>');
+  if(d===0&&!ok)return;
+  if(x.v==='<')d++;
+  if(x.v==='>'||x.v==='>>'){d-=x.v==='>>'?2:1;if(d<=0){this.next();return}}
+  this.next()}}
+ pargs(end){const args=[];while(this.peek().v!==end){if(this.peek().t==='eof')throw new RErr('unclosed `(`',this.peek().line);
+  args.push(this.pexpr());if(this.peek().v===',')this.next()}this.eat('punc',end);return args}
+ pclo(){this.eat('punc','|');const params=[];
+  while(this.peek().v!=='|'){if(this.peek().t==='eof')throw new RErr('unclosed closure params',this.peek().line);
+   if(this.peek().t==='kw'&&this.peek().v==='mut')this.next();
+   params.push({name:this.next().v,mut:false});
+   if(this.peek().v===':'){this.next();this.skipTy()}
+   if(this.peek().v===',')this.next()}
+  this.eat('punc','|');
+  const body=(this.peek().t==='punc'&&this.peek().v==='{')?this.pblock():this.pexpr();
+  return{k:'clo',params,body}}
+ pprim(){const x=this.peek();
+  if(x.t==='num'){this.next();return{k:'num',v:x.v,f:x.f}}
+  if(x.t==='str'){this.next();return{k:'str',v:x.v}}
+  if(x.t==='chr'){this.next();return{k:'chr',v:x.v}}
+  if(x.t==='punc'&&x.v==='|')return this.pclo();
+  if(x.t==='op'&&x.v==='||'){this.next();const body=(this.peek().t==='punc'&&this.peek().v==='{')?this.pblock():this.pexpr();return{k:'clo',params:[],body}}
+  if(x.t==='punc'&&x.v==='('){this.next();const e=this.pexpr();
+   if(this.peek().v===','){const els=[e];while(this.peek().v===','){this.next();if(this.peek().v===')')break;els.push(this.pexpr())}this.eat('punc',')');return{k:'tup',els}}
+   this.eat('punc',')');return e}
+  if(x.t==='punc'&&x.v==='['){this.next();const els=[];while(this.peek().v!==']'){if(this.peek().t==='eof')throw new RErr('unclosed `[`',this.peek().line);els.push(this.pexpr());if(this.peek().v===',')this.next()}this.eat('punc',']');return{k:'vec',els}}
+  if(x.t==='kw'){
+   if(x.v==='true'||x.v==='false'){this.next();return{k:'bool',v:x.v==='true'}}
+   if(x.v==='if'){this.next();const c=this.pexpr();const b=this.pblock();let els=null;
+    if(this.peek().t==='kw'&&this.peek().v==='else'){this.next();els=(this.peek().t==='kw'&&this.peek().v==='if')?{k:'ifwrap',e:this.pprim()}:this.pblock()}
+    return{k:'if',c,b,els}}
+   if(x.v==='while'){this.next();const c=this.pexpr();return{k:'while',c,b:this.pblock()}}
+   if(x.v==='loop'){this.next();return{k:'loop',b:this.pblock()}}
+   if(x.v==='for'){this.next();const v=this.next();if(v.t!=='id')throw new RErr('expected loop variable',v.line);
+    this.eat('kw','in');const it=this.prange();return{k:'for',v:v.v,it,b:this.pblock()}}
+   if(x.v==='match'){this.next();const sc=this.pexpr();this.eat('punc','{');const arms=[];
+    while(!(this.peek().t==='punc'&&this.peek().v==='}')){if(this.peek().t==='eof')throw new RErr('unclosed match',this.peek().line);
+     const pat=this.ppat();this.eat('op','=>');
+     const body=(this.peek().t==='punc'&&this.peek().v==='{')?this.pblock():this.pexpr();
+     arms.push({pat,body});if(this.peek().v===',')this.next()}
+    this.eat('punc','}');return{k:'match',sc,arms}}}
+  if(x.t==='id'){
+   if(x.v==='vec'&&this.peek(1).v==='!'){this.next();this.next();
+    if(this.peek().v==='['){this.next();const first=this.pexpr();
+     if(this.peek().v===';'){this.next();const cnt=this.pexpr();this.eat('punc',']');return{k:'vecfill',e:first,n:cnt}}
+     const els=[first];while(this.peek().v===','){this.next();if(this.peek().v===']')break;els.push(this.pexpr())}
+     this.eat('punc',']');return{k:'vec',els}}
+    throw new RErr('bad vec! usage',x.line)}
+   this.next();
+   if(this.peek().t==='op'&&this.peek().v==='::'){this.next();const seg=this.next();
+    if(this.peek().v==='('){this.next();const args=this.pargs(')');return{k:'scall',ns:x.v,fn:seg.v,args}}
+    throw new RErr(`path \`${x.v}::${seg.v}\` not in RustLite subset`,x.line)}
+   if(this.peek().v==='!'){this.next();
+    if(this.peek().v==='('){this.next();return{k:'macro',name:x.v,args:this.pargs(')')}}
+    throw new RErr(`unsupported macro \`${x.v}!\``,x.line)}
+   if(this.peek().v==='('){this.next();return{k:'call',name:x.v,args:this.pargs(')')}}
+   if(this.peek().v==='{'&&/^[A-Z]/.test(x.v)){this.next();const fields=[];let spread=null;
+    while(this.peek().v!=='}'){if(this.peek().t==='eof')throw new RErr('unclosed struct literal',this.peek().line);
+     if(this.peek().t==='op'&&this.peek().v==='..'){this.next();spread=this.pexpr();if(this.peek().v===',')this.next();continue}
+     const fn=this.next().v;this.eat('punc',':');fields.push([fn,this.pexpr()]);if(this.peek().v===',')this.next()}
+    this.eat('punc','}');return{k:'slit',name:x.v,fields,spread}}
+   return{k:'var',name:x.v,line:x.line}}
+  throw new RErr(`unexpected \`${x.v}\``,x.line)}
+ ppat(){const x=this.peek();
+  if(x.t==='id'&&x.v==='_'){this.next();return{p:'_'}}
+  if(x.t==='num'||x.t==='str'||x.t==='chr'||x.t==='kw'){
+   const lit=this.primLit();
+   if(this.peek().t==='op'&&this.peek().v==='..='){this.next();return{p:'range',lo:lit,hi:this.primLit()}}
+   return{p:'lit',v:lit}}
+  if(x.t==='id'){this.next();
+   if(this.peek().v==='('){this.next();const inner=this.ppat();this.eat('punc',')');return{p:'variant',name:x.v,inner}}
+   return{p:'bind',name:x.v}}
+  throw new RErr('bad match pattern',x.line)}
+ primLit(){const x=this.next();
+  if(x.t==='num')return{k:'num',v:x.v,f:x.f};
+  if(x.t==='str')return{k:'str',v:x.v};
+  if(x.t==='chr')return{k:'chr',v:x.v};
+  if(x.t==='kw'&&(x.v==='true'||x.v==='false'))return{k:'bool',v:x.v==='true'};
+  throw new RErr('bad literal in pattern',x.line)}
+}
+function runRust(src){
+ let ast;
+ try{ast=new Parser(lex(src)).prog()}catch(e){return{err:`error: ${e.message}${e.line?`\n  --> line ${e.line}`:''}`,out:''}}
+ const out=[],fns=ast.fns;let fuel=500000;
+ const V=(t,v)=>({t,v});
+ const num=(v,f=false)=>({t:'num',v,f});
+ function show(v,dbg){
+  if(!v)return'()';
+  if(v.t==='num')return String(v.v);
+  if(v.t==='str')return dbg?'"'+v.v+'"':v.v;
+  if(v.t==='chr')return dbg?"'"+v.v+"'":v.v;
+  if(v.t==='bool')return String(v.v);
+  if(v.t==='vec')return'['+v.v.map(x=>show(x,true)).join(', ')+']';
+  if(v.t==='tup')return'('+v.v.map(x=>show(x,true)).join(', ')+')';
+  if(v.t==='struct')return v.v.name+' { '+[...v.v.fields].map(([k,val])=>k+': '+show(val,true)).join(', ')+' }';
+  if(v.t==='opt')return v.v.some?'Some('+show(v.v.v,true)+')':'None';
+  if(v.t==='res')return v.v.ok?'Ok('+show(v.v.v,true)+')':'Err('+show(v.v.e,true)+')';
+  if(v.t==='unit')return'()';return'?'}
+ function veq(a,b){if(a.t!==b.t)return false;
+  if(['num','str','chr','bool'].includes(a.t))return a.v===b.v;
+  if(a.t==='vec'||a.t==='tup')return a.v.length===b.v.length&&a.v.every((x,i)=>veq(x,b.v[i]));
+  return false}
+ const truth=(v,l)=>{if(!v||v.t!=='bool')throw new RErr('expected `bool`, found non-boolean',l);return v.v};
+ function bin(op,l,r,line){
+  if(op==='&&')return V('bool',truth(l,line)&&truth(r,line));
+  if(op==='||')return V('bool',truth(l,line)||truth(r,line));
+  if(op==='=='||op==='!='){const e=veq(l,r);return V('bool',op==='=='?e:!e)}
+  if(op==='+'&&l.t==='str')return V('str',l.v+(r.t==='str'?r.v:show(r,false)));
+  if(l.t!=='num'||r.t!=='num')throw new RErr(`cannot apply \`${op}\` to these types`,line);
+  const f=l.f||r.f,a=l.v,b=r.v;
+  switch(op){
+   case'+':return num(a+b,f);case'-':return num(a-b,f);case'*':return num(a*b,f);
+   case'/':if(b===0)throw new RErr('attempt to divide by zero',line);return num(f?a/b:Math.trunc(a/b),f);
+   case'%':if(b===0)throw new RErr('attempt to calculate the remainder with divisor zero',line);return num(a%b,f);
+   case'<':return V('bool',a<b);case'>':return V('bool',a>b);
+   case'<=':return V('bool',a<=b);case'>=':return V('bool',a>=b)}
+  throw new RErr(`unknown operator ${op}`,line)}
+ function fmt(args,line){
+  if(!args.length)return'';
+  const fs=args[0].t==='str'?args[0].v:String(args[0].v);let ai=1;
+  return fs.replace(/{(:?[^}]*)}/g,(m,spec)=>{
+   const a=args[ai++];if(a===undefined)throw new RErr('invalid format string: missing argument',line);
+   if(spec&&spec.startsWith(':.')){const d=parseInt(spec.slice(2),10);return a.t==='num'?a.v.toFixed(d):show(a,false)}
+   if(spec==='?')return show(a,true);
+   return show(a,false)})}
+ const RT={ret:1,brk:2,cont:3};
+ function macro(nd,env){
+  const args=nd.args.map(a=>ev(a,env));
+  if(['println','eprintln','print'].includes(nd.name)){out.push(fmt(args,0));return V('unit')}
+  if(nd.name==='format')return V('str',fmt(args,0));
+  if(nd.name==='assert'){if(!truth(args[0],0))throw new RErr('assertion failed'+(args[1]?': '+show(args[1],false):''),0);return V('unit')}
+  if(nd.name==='assert_eq'){if(!veq(args[0],args[1]))throw new RErr(`assertion \`left == right\` failed\n  left: ${show(args[0],true)}\n right: ${show(args[1],true)}`,0);return V('unit')}
+  if(nd.name==='panic')throw new RErr('panicked at '+fmt(args,0),0);
+  if(nd.name==='dbg'){out.push('['+show(args[0],true)+']');return args[0]}
+  throw new RErr(`unsupported macro \`${nd.name}!\` in RustLite`,0)}
+ function method(obj,name,args,base,env){
+  const ap=(f,x)=>callFn(f,[x]);
+  switch(name){
+   case'len':return num(obj.t==='vec'?obj.v.length:(obj.t==='str'?obj.v.length:0));
+   case'iter':return obj;
+   case'push':{if(obj.t!=='vec')throw new RErr('`push` is only for Vec',0);
+    if(base&&base.k==='var'){const s=find(base.name,env);if(!s||!s.v.mut)throw new RErr(`cannot borrow \`${base.name}\` as mutable, as it is not declared as mutable\nhelp: \`let mut ${base.name}\``,0)}
+    obj.v.push(args[0]);return V('unit')}
+   case'pop':{if(obj.t!=='vec'||!obj.v.length)throw new RErr('pop from empty vec',0);return obj.v.pop()}
+   case'sum':return num(obj.v.reduce((a,x)=>a+(x.t==='num'?x.v:0),0),obj.v.some(x=>x.t==='num'&&x.f));
+   case'map':{if(obj.t==='vec')return V('vec',obj.v.map(x=>ap(args[0],x)));
+    if(obj.t==='opt')return V('opt',obj.v.some?{some:true,v:ap(args[0],obj.v.v)}:{some:false});
+    if(obj.t==='res')return V('res',obj.v.ok?{ok:true,v:ap(args[0],obj.v.v)}:obj.v);
+    throw new RErr('no map here',0)}
+   case'filter':{if(obj.t!=='vec')throw new RErr('filter works on Vec in RustLite',0);
+    return V('vec',obj.v.filter(x=>truth(ap(args[0],x),0)))}
+   case'fold':{let acc=args[0];for(const x of obj.v)acc=callFn(args[1],[acc,x]);return acc}
+   case'for_each':{for(const x of obj.v)callFn(args[0],[x]);return V('unit')}
+   case'enumerate':return V('vec',obj.v.map((x,i)=>V('tup',[num(i),x])));
+   case'contains':return V('bool',obj.t==='vec'?obj.v.some(x=>veq(x,args[0])):(obj.t==='str'?obj.v.includes(args[0].v):false));
+   case'is_empty':return V('bool',(obj.v||[]).length===0);
+   case'to_string':return V('str',show(obj,false));
+   case'trim':return V('str',obj.v.trim());
+   case'unwrap':{if(obj.t==='opt'){if(obj.v.some)return obj.v.v;throw new RErr('called `Option::unwrap()` on a `None` value',0)}
+    if(obj.t==='res'){if(obj.v.ok)return obj.v.v;throw new RErr('called `Result::unwrap()` on an `Err` value: '+show(obj.v.e,true),0)}
+    throw new RErr('nothing to unwrap',0)}
+   case'unwrap_or':{if(obj.t==='opt')return obj.v.some?obj.v.v:args[0];
+    if(obj.t==='res')return obj.v.ok?obj.v.v:args[0];throw new RErr('unwrap_or on non-Option',0)}
+   case'expect':{if(obj.t==='opt'){if(obj.v.some)return obj.v.v;throw new RErr(args[0]?args[0].v:'expect failed',0)}
+    if(obj.t==='res'){if(obj.v.ok)return obj.v.v;throw new RErr((args[0]?args[0].v:'expect failed')+': '+show(obj.v.e,true),0)}
+    throw new RErr('expect on non-Option',0)}
+   case'is_some':return V('bool',obj.t==='opt'&&obj.v.some);
+   case'is_none':return V('bool',obj.t==='opt'&&!obj.v.some);
+   case'is_ok':return V('bool',obj.t==='res'&&obj.v.ok);
+   case'is_err':return V('bool',obj.t==='res'&&!obj.v.ok);
+   case'sqrt':return num(Math.sqrt(obj.v),true);
+   case'abs':return num(Math.abs(obj.v),obj.f);
+   case'floor':return num(Math.floor(obj.v),true);
+   case'ceil':return num(Math.ceil(obj.v),true);
+   case'round':return num(Math.round(obj.v),true);
+   case'sin':return num(Math.sin(obj.v),true);
+   case'cos':return num(Math.cos(obj.v),true);
+   case'atan2':return num(Math.atan2(obj.v,args[0].v),true);
+  }
+  throw new RErr(`no method named \`${name}\` found in RustLite (subset limitation)`,0)}
+ function find(name,env){for(let i=env.length-1;i>=0;i--){const e=env[i].get(name);if(e)return e}return null}
+ function callFn(fd,args){
+  if(fd.params.length!==args.length)throw new RErr(`closure takes ${fd.params.length} argument(s)`,0);
+  const scope=new Map();fd.params.forEach((p,i)=>scope.set(p.name,{v:args[i],mut:p.mut}));
+  const base=fd.envSnap&&fd.envSnap.length?fd.envSnap:[new Map()];
+  return evBlock2(fd.body,[...base.map(m=>new Map(m)),scope])}
+ function evBlock2(blk,chain){
+  const saveLen=chain.length;let last=V('unit');
+  chain.push(new Map());
+  for(const st of blk.s){
+   if(--fuel<0)throw new RErr('execution limit exceeded — check your loops!',0);
+   if(st.k==='let')chain[chain.length-1].set(st.name,{v:ev(st.e,chain),mut:st.mut});
+   else if(st.k==='expr')ev(st.e,chain);
+   else if(st.k==='tail')last=ev(st.e,chain);
+   else if(st.k==='ret'){const v=st.e?ev(st.e,chain):V('unit');chain.length=saveLen;return v}
+   else if(st.k==='break')throw{rt:RT.brk,v:st.e?ev(st.e,chain):V('unit')};
+   else if(st.k==='cont')throw{rt:RT.cont}}
+  chain.length=saveLen;return last}
+ function evBlock(blk,env){
+  env.push(new Map());let last=V('unit');
+  for(const st of blk.s){
+   if(--fuel<0)throw new RErr('execution limit exceeded — check your loops!',0);
+   if(st.k==='let')env[env.length-1].set(st.name,{v:ev(st.e,env),mut:st.mut});
+   else if(st.k==='expr'){ev(st.e,env);last=V('unit')}
+   else if(st.k==='tail')last=ev(st.e,env);
+   else if(st.k==='ret')throw{rt:RT.ret,v:st.e?ev(st.e,env):V('unit')};
+   else if(st.k==='break')throw{rt:RT.brk,v:st.e?ev(st.e,env):V('unit')};
+   else if(st.k==='cont')throw{rt:RT.cont}}
+  env.pop();return last}
+ function assign(nd,env){
+  if(nd.l.k!=='var'&&nd.l.k!=='index')throw new RErr('invalid assignment target',0);
+  if(nd.l.k==='index'){const c=ev(nd.l.e,env);const i=ev(nd.l.idx,env).v;
+   if(c.t!=='vec')throw new RErr('cannot index this value',0);
+   if(i<0||i>=c.v.length)throw new RErr(`index out of bounds: the len is ${c.v.length} but the index is ${i}`,0);
+   if(nd.l.e.k==='var'){const s=find(nd.l.e.name,env);if(!s||!s.v.mut)throw new RErr(`cannot borrow \`${nd.l.e.name}\` as mutable`,0)}
+   c.v[i]=ev(nd.r,env);return V('unit')}
+  const s=find(nd.l.name,env);
+  if(!s)throw new RErr(`cannot find value \`${nd.l.name}\` in this scope`,0);
+  if(!s.v.mut)throw new RErr(`cannot assign to \`${nd.l.name}\` because it is immutable\nhelp: consider making this binding mutable: \`let mut ${nd.l.name}\``,0);
+  let v=ev(nd.r,env);
+  if(nd.op!=='=')v=bin(nd.op[0],s.v.v,v,0);
+  s.v.v=v;return V('unit')}
+ function ev(nd,env){
+  if(!nd)return V('unit');
+  switch(nd.k){
+   case'num':return num(nd.v,nd.f);
+   case'str':return V('str',nd.v);
+   case'chr':return V('chr',nd.v);
+   case'bool':return V('bool',nd.v);
+   case'tup':return V('tup',nd.els.map(e=>ev(e,env)));
+   case'vec':return V('vec',nd.els.map(e=>ev(e,env)));
+   case'vecfill':{const e=ev(nd.e,env);const cnt=ev(nd.n,env).v;const arr=[];
+    for(let i=0;i<cnt&&i<100000;i++)arr.push(e);return V('vec',arr)}
+   case'slit':{const f=new Map();
+    if(nd.spread){const b=ev(nd.spread,env);if(b.t==='struct')for(const[k,v]of b.v.fields)f.set(k,v)}
+    for(const[k,e]of nd.fields)f.set(k,ev(e,env));
+    return V('struct',{name:nd.name,fields:f})}
+   case'var':{if(nd.name==='None')return V('opt',{some:false});
+    const s=find(nd.name,env);if(!s)throw new RErr(`cannot find value \`${nd.name}\` in this scope`,nd.line);return s.v.v}
+   case'un':{const v=ev(nd.e,env);
+    if(nd.op==='-'){if(v.t!=='num')throw new RErr('cannot negate non-number',0);return num(-v.v,v.f)}
+    return V('bool',!truth(v,0))}
+   case'deref':case'ref':return ev(nd.e,env);
+   case'cast':{const v=ev(nd.e,env);if(v.t!=='num')return v;return nd.f?num(v.v,true):num(Math.trunc(v.v),false)}
+   case'bin':{
+    if(nd.op==='&&'){if(!truth(ev(nd.l,env),0))return V('bool',false);return V('bool',truth(ev(nd.r,env),0))}
+    if(nd.op==='||'){if(truth(ev(nd.l,env),0))return V('bool',true);return V('bool',truth(ev(nd.r,env),0))}
+    return bin(nd.op,ev(nd.l,env),ev(nd.r,env),0)}
+   case'assign':return assign(nd,env);
+   case'range':{const a=ev(nd.a,env),b=ev(nd.b,env);return V('range',{a:a.v,b:b.v,incl:nd.incl})}
+   case'index':{const c=ev(nd.e,env),i=ev(nd.idx,env);
+    if(c.t==='vec'){if(i.v<0||i.v>=c.v.length)throw new RErr(`index out of bounds: the len is ${c.v.length} but the index is ${i.v}`,0);return c.v[i.v]}
+    throw new RErr('cannot index this value',0)}
+   case'mget':{const o=ev(nd.e,env);
+    if(o.t==='struct'){if(o.v.fields.has(nd.m))return o.v.fields.get(nd.m);throw new RErr(`no field \`${nd.m}\` on ${o.v.name}`,0)}
+    if(o.t==='tup'&&/^\d+$/.test(nd.m)){const i=+nd.m;if(i>=o.v.length)throw new RErr('tuple index out of bounds',0);return o.v[i]}
+    throw new RErr(`no field \`${nd.m}\` in RustLite`,0)}
+   case'mcall':{const o=ev(nd.e,env);const args=nd.args.map(a=>ev(a,env));return method(o,nd.m,args,nd.e,env)}
+   case'scall':throw new RErr(`associated function \`${nd.ns}::${nd.fn}\` not in RustLite subset`,0);
+   case'call':{
+    if(nd.name==='Some')return V('opt',{some:true,v:ev(nd.args[0],env)});
+    if(nd.name==='Ok')return V('res',{ok:true,v:ev(nd.args[0],env)});
+    if(nd.name==='Err')return V('res',{ok:false,e:ev(nd.args[0],env)});
+    const s=find(nd.name,env);
+    if(s&&s.v.v&&s.v.v.t==='fn'){return callFn(s.v.v.v,nd.args.map(a=>ev(a,env)))}
+    const f=fns[nd.name];if(!f)throw new RErr(`cannot find function \`${nd.name}\` in this scope`,0);
+    if(nd.args.length!==f.params.length)throw new RErr(`\`${nd.name}\` takes ${f.params.length} argument(s) but ${nd.args.length} supplied`,0);
+    const scope=new Map();f.params.forEach((p,i)=>scope.set(p.name,{v:ev(nd.args[i],env),mut:p.mut}));
+    return evBlock2(f.body,[env[0],scope])}
+   case'clo':return V('fn',{params:nd.params,body:nd.body,envSnap:env.map(m=>new Map(m))});
+   case'macro':return macro(nd,env);
+   case'if':{if(truth(ev(nd.c,env),0))return evBlock(nd.b,env);
+    if(!nd.els)return V('unit');
+    if(nd.els.k==='ifwrap')return ev(nd.els.e,env);
+    return evBlock(nd.els,env)}
+   case'while':{while(truth(ev(nd.c,env),0)){
+    if(--fuel<0)throw new RErr('execution limit exceeded',0);
+    try{evBlock(nd.b,env)}catch(e){if(e&&e.rt===RT.brk)return V('unit');if(e&&e.rt===RT.cont)continue;throw e}}
+    return V('unit')}
+   case'loop':{for(;;){if(--fuel<0)throw new RErr('execution limit exceeded',0);
+    try{evBlock(nd.b,env)}catch(e){if(e&&e.rt===RT.brk)return e.v;if(e&&e.rt===RT.cont)continue;throw e}}}
+   case'for':{const it=ev(nd.it,env);let items;
+    if(it.t==='range'){items=[];const{a,b,incl}=it.v;const end=incl?b:b-1;
+     for(let x=a;x<=end;x++){items.push(num(x,false));if(items.length>200000)throw new RErr('range too large',0)}}
+    else if(it.t==='vec')items=it.v.slice();
+    else throw new RErr('`for` works on ranges and Vec in RustLite',0);
+    for(const item of items){if(--fuel<0)throw new RErr('execution limit exceeded',0);
+     env.push(new Map([[nd.v,{v:item,mut:false}]]));
+     try{evBlock(nd.b,env)}catch(e){env.pop();if(e&&e.rt===RT.brk)return V('unit');if(e&&e.rt===RT.cont)continue;throw e}
+     env.pop()}
+    return V('unit')}
+   case'match':{const sv=ev(nd.sc,env);
+    for(const arm of nd.arms){const p=arm.pat;
+     if(p.p==='_')return evArm(arm,env,null);
+     if(p.p==='lit'){if(veq(sv,ev(p.v,env)))return evArm(arm,env,null)}
+     else if(p.p==='range'){const lo=ev(p.lo,env).v,hi=ev(p.hi,env).v;
+      if(sv.t==='num'&&sv.v>=lo&&sv.v<=hi)return evArm(arm,env,null)}
+     else if(p.p==='variant'){
+      if(sv.t==='opt'&&p.name==='Some'&&sv.v.some)return evArm(arm,env,{name:p.inner.p==='bind'?p.inner.name:null,v:sv.v.v});
+      if(sv.t==='res'&&p.name==='Ok'&&sv.v.ok)return evArm(arm,env,{name:p.inner.p==='bind'?p.inner.name:null,v:sv.v.v});
+      if(sv.t==='res'&&p.name==='Err'&&!sv.v.ok)return evArm(arm,env,{name:p.inner.p==='bind'?p.inner.name:null,v:sv.v.e})}
+     else if(p.p==='bind'){
+      if(p.name==='None'&&sv.t==='opt'&&!sv.v.some)return evArm(arm,env,null);
+      if(!(sv.t==='opt'||sv.t==='res'))return evArm(arm,env,{name:p.name,v:sv})}}
+    throw new RErr('non-exhaustive match: no arm matched',0)}
+  }
+  throw new RErr('internal: bad node',0)}
+ function evArm(arm,env,bind){
+  if(!bind)return ev(arm.body,env);
+  env.push(new Map([[bind.name,{v:bind.v,mut:false}]]));
+  const r=ev(arm.body,env);env.pop();return r}
+ try{
+  const globals=new Map();const env=[globals];
+  for(const st of ast.stmts){
+   if(st.k==='let')globals.set(st.name,{v:ev(st.e,env),mut:st.mut});
+   else if(st.k==='expr')ev(st.e,env);
+   else if(st.k==='tail')ev(st.e,env);
+   else ev(st,env)}
+  const testNames=Object.keys(fns).filter(n=>n.startsWith('test_'));
+  if(fns.main){evBlock2(fns.main.body,[globals,new Map()])}
+  let report='';
+  if(testNames.length){
+   report=`\n\nrunning ${testNames.length} test${testNames.length>1?'s':''}`;
+   let failed=0;
+   for(const tn of testNames){
+    try{evBlock2(fns[tn].body,[globals,new Map()]);report+=`\ntest ${tn} ... ok`}
+    catch(e){failed++;
+     if(e&&e.rt===RT.ret){report+=`\ntest ${tn} ... ok`;failed--;continue}
+     report+=`\ntest ${tn} ... FAILED\n  ↳ ${e.message||e}`}}
+   report+=`\ntest result: ${failed?'FAILED':'ok'}. ${testNames.length-failed} passed; ${failed} failed`}
+  return{out:out.join('\n')+report,err:null};
+ }catch(e){
+  if(e instanceof RErr)return{err:`error: ${e.message}${e.line?`\n  --> line ${e.line}`:''}`,out:out.join('\n')};
+  return{err:'internal interpreter error: '+(e.message||e),out:out.join('\n')}}
+}
+
+/* ================= checkers ================= */
+const lines=o=>o.split('\n').map(s=>s.trim()).filter(s=>s.length);
+const CK={
+ hello:(c,o)=>/Hello,\s*Ferris!/.test(o)?{ok:1}:{ok:0,msg:'The output must contain exactly: Hello, Ferris!'},
+ temp:(c,o)=>/fahrenheit/.test(c)&&/98\.6/.test(o)?{ok:1}:{ok:0,msg:'Bind `fahrenheit` = c * 9.0 / 5.0 + 32.0 and print it — expect 98.6.'},
+ mutfix:(c,o)=>/let\s+mut\s+count/.test(c)&&lines(o).join(',').startsWith('11')?{ok:1}:{ok:0,msg:'Make the binding mutable (`let mut count`) so it prints 11.'},
+ countdown:(c,o)=>lines(o).join(',')==='5,4,3,2,1,Liftoff!'?{ok:1}:{ok:0,msg:'Print 5,4,3,2,1 each on its own line, then "Liftoff!"'},
+ grade:(c,o)=>{const L=lines(o);return /match/.test(c)&&['A','B','C'].every(x=>L.includes(x))?{ok:1}:{ok:0,msg:'Use `match` with range patterns; grade(95), grade(84), grade(72) must yield A, B, C.'}},
+ bigger:(c,o)=>/fn\s+bigger\s*</.test(c)&&/20/.test(o)&&/7\.5/.test(o)?{ok:1}:{ok:0,msg:'Define `fn bigger<T>(...)`; it must print 20 then 7.5.'},
+ threads:c=>(/thread::spawn/.test(c)&&/mpsc::/.test(c)&&/\.send\(/.test(c)&&/recv\(\)/.test(c))?{ok:1}:{ok:0,msg:'You need thread::spawn, mpsc::channel(), tx.send(...) and rx.recv().'},
+ optfind:(c,o)=>/Option/.test(c)&&/found:\s*9\.2/.test(o)&&/none/.test(o)?{ok:1}:{ok:0,msg:'Return Some(v)/None from find_big and match on both calls — expect "found: 9.2" then "none".'},
+ itergauntlet:(c,o)=>/\.filter\s*\(\s*\|/.test(c)&&/\.map\s*\(\s*\|/.test(c)&&lines(o).includes('15')?{ok:1}:{ok:0,msg:'Chain .iter().filter(|x| ...).map(|x| ...).sum() — result should be 15.'},
+ kalman:(c,o)=>{
+  if(/test result: FAILED/.test(o))return{ok:0,msg:'Your tests are failing — fix predict/update first. Read the FAILED lines.'};
+  const m=o.match(/final:\s*([-\d.]+)/);
+  if(!m)return{ok:0,msg:'Print the result as: final: <value>'};
+  const x=parseFloat(m[1]);
+  return Math.abs(x-1.0)<=0.06?{ok:1}:{ok:0,msg:`Your estimate landed at ${x} — it should converge near 1.0. Check gain k = p / (p + r).`}}
+};
+
+/* ================= curriculum wiring ================= */
+if(!window.RF||!window.RF.RANKS){document.body.innerHTML='<p style="padding:40px;font-family:monospace">content.js failed to load — make sure it sits next to index.html.</p>';throw new Error('no content')}
+const RANKS=window.RF.RANKS;
+const LESSONS=[];
+RANKS.forEach((r,ri)=>r.lessons.forEach(l=>{l.rank=ri;l.exIds=[];let xi=0;
+ l.b.forEach(bl=>{if(['mcq','fill','predict','type','order'].includes(bl.k)){bl.id=l.id+'_e'+(xi++);l.exIds.push(bl.id)}});
+ LESSONS.push(l)}));
+const lessonDone=l=>l.exIds.length>0&&l.exIds.every(id=>S.done[id]);
+const rankDone=r=>r.lessons.every(lessonDone);
+const unlocked=li=>li===0||lessonDone(LESSONS[li-1]);
+
+/* ================= levels & badges ================= */
+const TH=[0];for(let i=1;i<=40;i++)TH.push(TH[i-1]+100+i*70);
+const TITLES=['HATCHLING','CRAB CADET','VARIABLE TAMER','BORROWER','MOVE MASTER','TYPE WRANGLER','TRAIT SMITH','LIFETIME SAGE','POINTER ALCHEMIST','THREAD WEAVER','CHANNEL RUNNER','ASYNC ADEPT','ERROR ALCHEMIST','UNSAFE SCHOLAR','SPEED SMITH','HARDWARE HACKER','FILTER APPRENTICE','FUSION ENGINEER','PERCEPTRON','ROBOTICIST','AUTONOMY ARCHITECT'];
+function levelInfo(){let lvl=1;while(lvl<TH.length&&S.xp>=TH[lvl])lvl++;
+ return{lvl,cur:S.xp-(TH[lvl-1]||0),need:(TH[lvl]||TH[TH.length-1])-(TH[lvl-1]||0),title:TITLES[Math.min(lvl-1,TITLES.length-1)]}}
+const BADGES=[
+ {id:'spark',ic:'✨',n:'First Spark',d:'Solve your first exercise',c:()=>Object.keys(S.done).length>=1},
+ {id:'owner',ic:'🔑',n:'Owner of Ownership',d:'Clear the Ownership Dojo',c:()=>rankDone(RANKS[1])},
+ {id:'trait',ic:'⚙️',n:'Trait Smith',d:'Clear the Trait Forge',c:()=>rankDone(RANKS[3])},
+ {id:'conc',ic:'🧵',n:'Thread Weaver',d:'Clear Fearless Concurrency',c:()=>rankDone(RANKS[4])},
+ {id:'kalman',ic:'🧿',n:'Kalman Slayer',d:'Beat the 1-D Kalman boss',c:()=>lessonDone(LESSONS.find(l=>l.id==='r10l2'))},
+ {id:'streak3',ic:'🔥',n:'Kindling',d:'3-day streak',c:()=>S.streak.n>=3},
+ {id:'streak7',ic:'🌋',n:'Smoldering',d:'7-day streak',c:()=>S.streak.n>=7},
+ {id:'fifty',ic:'🎖️',n:'Grinder',d:'50 exercises solved',c:()=>Object.keys(S.done).length>=50},
+ {id:'daily5',ic:'📅',n:'Ritualist',d:'Complete 5 daily drills',c:()=>(S.drill.n||0)>=5},
+ {id:'combo8',ic:'⚡',n:'Unstoppable',d:'Reach a ×3 combo (8 in a row)',c:()=>S.best>=8},
+ {id:'cap',ic:'👑',n:'Autonomy Prime',d:'Complete the final campaign',c:()=>rankDone(RANKS[11])}
+];
+function checkBadges(){BADGES.forEach(b=>{if(!S.badges.includes(b.id)&&b.c()){S.badges.push(b.id);save();
+ toast(`🏅 Badge earned: <b>${b.n}</b>`,'gold');beep('lvl')}})}
+function updateStreak(){const t=todayStr();if(S.streak.d===t)return;
+ const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+ S.streak.n=(S.streak.d===y)?S.streak.n+1:1;S.streak.d=t}
+
+/* ================= award pipeline ================= */
+function award(ex,base,ev){
+ if(S.done[ex.id])return 0;
+ const mult=comboMult();const xp=Math.round(base*mult);
+ S.done[ex.id]=1;S.xp+=xp;
+ const t=todayStr();S.days[t]=(S.days[t]||0)+1;
+ updateStreak();save();
+ beep('ok',combo);if(ev)sparks(ev.clientX||innerWidth/2,ev.clientY||innerHeight/2);
+ toast(`⚡ <b>+${xp} XP</b>${mult>1?` (×${mult.toFixed(2).replace(/0$/,'')} combo)`:''}`,'green');
+ const li=levelInfo();if(!award._lvl)award._lvl=li.lvl;
+ if(li.lvl>award._lvl){toast(`🎉 LEVEL UP — <b>LVL ${li.lvl} · ${li.title}</b>`,'gold');beep('lvl')}
+ award._lvl=li.lvl;
+ checkBadges();updateHUD();
+ maybeBoss(ex);
+ return xp}
+function maybeBoss(ex){
+ const l=LESSONS.find(x=>x.id===ex.lid||x.exIds.includes(ex.id));
+ if(!l||!l.boss||!lessonDone(l))return;
+ if(S.bonus[l.rank])return;
+ S.bonus[l.rank]=1;S.xp+=150;save();
+ $('#vicTitle').textContent='RANK '+l.rank+' BOSS DEFEATED';
+ $('#vicSub').textContent=RANKS[l.rank].n+' · +150 XP BONUS';
+ $('#bossOverlay').hidden=false;beep('lvl');
+ for(let i=0;i<5;i++)setTimeout(()=>sparks(innerWidth*(0.2+Math.random()*0.6),innerHeight*(0.2+Math.random()*0.5),22),i*180);
+ updateHUD()}
+$('#vicBtn').onclick=()=>{$('#bossOverlay').hidden=true;refreshMapStates()};
+
+/* ================= HUD ================= */
+function updateHUD(){const li=levelInfo();
+ $('#lvlName').textContent=`LVL ${li.lvl} · ${li.title}`;
+ $('#xpTxt').textContent=S.xp+' XP';
+ $('#xpFill').style.width=Math.min(100,Math.round(li.cur/li.need*100))+'%';
+ $('#streakTxt').textContent='🔥 '+S.streak.n;
+ $('#soundBtn').textContent=S.snd?'🔊':'🔇';
+ updateComboUI()}
+
+/* ================= rendering helpers ================= */
+function md(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>')}
+function hl(src){
+ let s=esc(src);const st=[];const keep=(cls,m)=>{st.push([cls,m]);return'\x00'+(st.length-1)+'\x00'};
+ s=s.replace(/\/\/[^\n]*/g,m=>keep('com',m));
+ s=s.replace(/&quot;(?:(?!&quot;).)*&quot;/gs,m=>keep('str',m));
+ s=s.replace(/\b(fn|let|mut|if|else|match|for|while|loop|in|return|break|continue|struct|impl|trait|enum|pub|use|crate|mod|self|Self|true|false|const|static|unsafe|async|await|dyn|move|ref|where|type|as|super)\b/g,'<span class="kw">$1</span>');
+ s=s.replace(/\b([a-z_][a-z0-9_]*)!/g,'<span class="mac">$1!</span>');
+ s=s.replace(/\b([A-Z][A-Za-z0-9_]*)\b/g,'<span class="ty">$1</span>');
+ s=s.replace(/\b(\d[\d_]*\.?[\d_]*)\b/g,'<span class="num">$1</span>');
+ s=s.replace(/\x00(\d+)\x00/g,(_,i)=>`<span class="${st[i][0]}">${st[i][1]}</span>`);
+ return s}
+function codeBlock(code,cap){
+ const d=document.createElement('div');d.className='codeblk';
+ d.innerHTML=`<div class="codebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="tag">${cap?esc(cap):'rust'}</span><span class="spacer"></span><button class="copybtn">COPY</button></div><pre><code>${hl(code)}</code></pre>`;
+ d.querySelector('.copybtn').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(code);
+  const b=d.querySelector('.copybtn');b.textContent='COPIED ✓';setTimeout(()=>b.textContent='COPY',1200)};
+ return d}
+
+/* ================= map ================= */
+function renderMap(){
+ const mv=$('#mapView');
+ const totalEx=LESSONS.reduce((a,l)=>a+l.exIds.length,0),doneEx=Object.keys(S.done).filter(k=>!k.startsWith('drill')).length;
+ let html=`<div class="maphead"><div><h2>THE <span>FORGE MAP</span></h2>
+ <p class="sub">Twelve ranks between you and a Rust-built, AI-driven, sensor-fusing robot. Chain answers to build your combo multiplier. Deep links work — every quest has its own URL.</p></div>
+ <div class="overall"><b>${doneEx}</b>/${totalEx} EXERCISES · <b>${S.xp}</b> XP<br>${RANKS.filter(rankDone).length}/12 RANKS CLEARED</div></div>`;
+ html+=renderDash();
+ RANKS.forEach((r,ri)=>{
+  const exIn=r.lessons.reduce((a,l)=>a+l.exIds.length,0);
+  const doneIn=r.lessons.reduce((a,l)=>a+l.exIds.filter(id=>S.done[id]).length,0);
+  const firstIdx=LESSONS.indexOf(r.lessons[0]);
+  const zoneOpen=ri===0||unlocked(firstIdx)||r.lessons.some(l=>l.exIds.some(id=>S.done[id]));
+  const isCurrent=r.lessons.some(l=>unlocked(LESSONS.indexOf(l))&&!lessonDone(l));
+  html+=`<section class="zone ${zoneOpen?'':'locked'} ${isCurrent?'current':''}">
+   <div class="zonehead"><div class="rk">${String(ri).padStart(2,'0')}</div>
+   <div class="zt"><h3>${r.icon} RANK ${ri} · ${r.n}</h3><p>${r.tag}</p></div>
+   <div class="zprog">${rankDone(r)?'<span class="zstamp">✓ CLEARED</span>':''}<br><b>${doneIn}</b>/${exIn}<div class="zb"><i style="width:${exIn?Math.round(doneIn/exIn*100):0}%"></i></div></div></div>
+   <div class="nodes">`;
+  r.lessons.forEach(l=>{
+   const gi=LESSONS.indexOf(l);const un=unlocked(gi);const dn=lessonDone(l);
+   html+=`<button class="node ${dn?'done':un?'open':'lock'} ${l.boss?'boss':''}" data-lesson="${l.id}" ${un?'':'disabled'}>
+    <span class="nic">${un||dn?l.icon:'🔒'}</span><span class="nn">${l.t}</span>
+    <span class="nx">${l.boss?'BOSS · ':''}${l.min} MIN · ${l.exIds.length} EX</span></button>`});
+  html+=`</div></section>`});
+ mv.innerHTML=html;
+ $$('#mapView .node').forEach(b=>b.onclick=()=>openLesson(b.dataset.lesson));
+ const db=$('#drillBtn');if(db)db.onclick=openDrill;
+ const ex=$('#exportBtn');if(ex)ex.onclick=exportSave;
+ const im=$('#importBtn');if(im)im.onclick=()=>$('#importFile').click();
+ const fi=$('#importFile');if(fi)fi.onchange=importSave}
+function refreshMapStates(){if(!$('#mapView').hidden)renderMap()}
+
+function renderDash(){
+ const t=todayStr();const drillDone=S.done['drill_'+t];
+ const acc=(S.right+S.wrong)?Math.round(S.right/(S.right+S.wrong)*100):100;
+ let hm='<div class="heatmap">';
+ const end=new Date();const DAYS=16*7;
+ for(let w=15;w>=0;w--){hm+='<div class="hcol">';
+  for(let d=0;d<7;d++){
+   const dt=new Date(end);dt.setDate(end.getDate()-(w*7+(6-d)));
+   const k=dt.toISOString().slice(0,10);const n=S.days[k]||0;
+   const lvl=n===0?'':n===1?'l1':n===2?'l2':n===3?'l3':'l4';
+   hm+=`<div class="hc ${lvl}" title="${k}: ${n} solved"></div>`}
+  hm+='</div>'}
+ hm+='</div>';
+ return `<div class="dash">
+  <div class="drillcard ${drillDone?'done':''}">
+   <h3>${drillDone?'✓ DAILY DRILL CLEARED':'⚡ DAILY DRILL'}</h3>
+   <div class="dd">${t} · SEEDED ${hash(t)%997}</div>
+   <p>${drillDone?'Come back tomorrow for a fresh challenge. Consistency compounds — your streak is '+S.streak.n+' day(s).':'One rapid-fire challenge, seeded from today\u2019s date. Worth 50 XP × your combo. Streak-safe.'}</p>
+   ${drillDone?'':'<button class="btn sm" id="drillBtn">START DRILL</button>'}
+  </div>
+  <div class="statcard">
+   <h4>ACTIVITY · LAST 16 WEEKS</h4>${hm}
+   <div class="statrow">
+    <span><b>${acc}%</b>ACCURACY</span>
+    <span><b>×${(1+0.25*Math.min(S.best,8)).toFixed(2).replace(/0$/,'')}</b>BEST COMBO (${S.best})</span>
+    <span><b>${S.badges.length}/${BADGES.length}</b>BADGES</span>
+    <span class="io">
+     <button class="mini" id="exportBtn">EXPORT SAVE</button>
+     <button class="mini" id="importBtn">IMPORT</button>
+     <input type="file" id="importFile" accept=".json" hidden>
+    </span></div>
+  </div></div>`}
+function exportSave(){const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rustforge-save.json';a.click();
+ toast('💾 Save exported','gold')}
+function importSave(e){const f=e.target.files[0];if(!f)return;
+ const rd=new FileReader();
+ rd.onload=()=>{try{const o=JSON.parse(rd.result);
+  if(typeof o.xp!=='number'||typeof o.done!=='object')throw 0;
+  S={...DEF,...o};save();location.reload()}catch(err){toast('⚠️ Invalid save file')}};
+ rd.readAsText(f)}
+
+/* ================= daily drill ================= */
+const DRILLS=[
+ {k:'predict',q:'Quick! What prints?',code:'fn main() {\n    println!("{}", 7 / 2);\n}',expect:['3'],hint:'Integer division truncates.'},
+ {k:'predict',q:'What prints?',code:'fn main() {\n    let v = vec![4, 8, 2];\n    println!("{}", v.len());\n}',expect:['3'],hint:'len() counts elements.'},
+ {k:'mcq',q:'Which borrow combination is legal?',opts:['One &T and one &mut T simultaneously','Two &mut T simultaneously','Any number of &T, or one &mut T alone','&mut T never'],ai:2,hint:'Many readers OR one writer.'},
+ {k:'predict',q:'Shadowing! What prints?',code:'fn main() {\n    let x = 3;\n    let x = x * x;\n    println!("{}", x);\n}',expect:['9'],hint:'Shadowing uses the previous value.'},
+ {k:'mcq',q:'Option<T> encodes…',opts:['Some(T) or None','Ok(T) or Err(E)','A nullable pointer','A vector'],ai:0,hint:'Result is the Ok/Err one.'},
+ {k:'predict',q:'What prints?',code:'fn main() {\n    let mut n = 0;\n    while n < 3 { n = n + 1; }\n    println!("{}", n);\n}',expect:['3'],hint:'Count the iterations.'},
+ {k:'mcq',q:'Arc differs from Rc because…',opts:['Arc is generic','Arc\u2019s refcount is atomic — safe across threads','Arc is owned','Rc is newer'],ai:1,hint:'Think threads.'},
+ {k:'predict',q:'Loops can return values. What prints?',code:'fn main() {\n    let r = loop { break 5 + 5; };\n    println!("{}", r);\n}',expect:['10'],hint:'break with a value.'}
+];
+function openDrill(){
+ const t=todayStr();const id='drill_'+t;
+ if(S.done[id]){toast('Drill already cleared today','gold');return}
+ const d={...DRILLS[hash(t)%DRILLS.length],id,xp:50,lid:null};
+ const box=$('#drillBox');box.innerHTML='<h3>⚡ Daily Drill</h3>';
+ box.appendChild(renderQuest(d,()=>{$('#drillModal').hidden=true;renderMap()}));
+ $('#drillModal').hidden=false}
+$('#drillModal').addEventListener('click',e=>{if(e.target.id==='drillModal')$('#drillModal').hidden=true});
+
+/* ================= lesson view ================= */
+let currentLesson=null;
+const swap=fn=>{if(document.startViewTransition&&!RM)document.startViewTransition(fn);else fn()};
+function openLesson(id){
+ const l=LESSONS.find(x=>x.id===id);if(!l)return;
+ const gi=LESSONS.indexOf(l);
+ if(!unlocked(gi)){toast('🔒 Solve the previous quest first');return}
+ swap(()=>{currentLesson=l;
+  const lv=$('#lessonView');lv.innerHTML='';lv.hidden=false;$('#mapView').hidden=true;
+  window.scrollTo({top:0});
+  const r=RANKS[l.rank];
+  const wrap=document.createElement('div');wrap.className='lesson';
+  wrap.innerHTML=`<div class="crumbs"><a data-home>◂ FORGE MAP</a> / RANK ${l.rank} · ${r.n} / ${l.id.toUpperCase()}</div>
+   <div class="lhead"><h1>${l.icon} ${l.t}</h1></div>
+   <div class="chips"><span class="chip ember">RANK ${l.rank} — ${r.n}</span><span class="chip gold">≈ ${l.min} MIN</span><span class="chip">${l.exIds.length} EXERCISES</span>${l.boss?'<span class="chip gold">👑 BOSS QUEST</span>':''}</div>`;
+  if(l.boss){const bb=document.createElement('div');bb.className='bossbar';bb.id='bossBar';
+   bb.innerHTML=`<div class="bl">⚔ BOSS INTEGRITY — ${l.exIds.filter(x=>!S.done[x]).length} SYSTEMS REMAINING</div><div class="segs">${l.exIds.map(x=>`<div class="seg ${S.done[x]?'hit':''}"></div>`).join('')}</div>`;
+   wrap.appendChild(bb)}
+  l.b.forEach(bl=>wrap.appendChild(renderBlock(bl)));
+  const nxt=LESSONS[gi+1];
+  const foot=document.createElement('div');foot.className='lfoot';
+  foot.innerHTML=`<button class="btn ghost" data-home>◂ MAP</button>`;
+  if(nxt){const nb=document.createElement('button');nb.className='btn';nb.textContent='NEXT QUEST ▸';
+   nb.disabled=!unlocked(gi+1);nb.onclick=()=>{location.hash='#/l/'+nxt.id};
+   if(!unlocked(gi+1))nb.title='Solve every exercise in this quest first';foot.appendChild(nb)}
+  else{const fb=document.createElement('button');fb.className='btn';fb.textContent='🏁 CAMPAIGN COMPLETE';fb.onclick=()=>location.hash='#/map';foot.appendChild(fb)}
+  wrap.appendChild(foot);
+  wrap.querySelectorAll('[data-home]').forEach(a=>a.onclick=()=>location.hash='#/map');
+  lv.appendChild(wrap)})}
+function goMap(){swap(()=>{$('#lessonView').hidden=true;$('#mapView').hidden=false;renderMap();window.scrollTo({top:0})})}
+function updateBossBar(){const l=currentLesson;if(!l||!l.boss)return;const bb=$('#bossBar');if(!bb)return;
+ const segs=[...bb.querySelectorAll('.seg')];
+ l.exIds.forEach((x,i)=>segs[i]&&segs[i].classList.toggle('hit',!!S.done[x]));
+ bb.querySelector('.bl').textContent=`⚔ BOSS INTEGRITY — ${l.exIds.filter(x=>!S.done[x]).length} SYSTEMS REMAINING`}
+
+function renderBlock(bl){
+ if(bl.k==='p'){const p=document.createElement('p');p.className='tx';p.innerHTML=md(bl.t);return p}
+ if(bl.k==='h'){const h=document.createElement('h3');h.innerHTML=md(bl.t);return h}
+ if(bl.k==='ul'){const u=document.createElement('ul');u.className='txlist';bl.items.forEach(i=>{const li=document.createElement('li');li.innerHTML=md(i);u.appendChild(li)});return u}
+ if(bl.k==='code')return codeBlock(bl.code,bl.cap);
+ if(bl.k==='note'){const n=document.createElement('div');n.className='note '+bl.cls;n.innerHTML=`<span>${bl.ic}</span><div>${md(bl.t)}</div>`;return n}
+ return renderQuest(bl)}
+
+function questShell(bl,label){
+ const q=document.createElement('div');q.className='quest';q.id='q_'+bl.id;
+ if(S.done[bl.id])q.classList.add('solved');
+ q.innerHTML=`<div class="qhead"><span class="qtag">${label}</span><span class="qxp">+${bl.xp} XP</span></div><div class="qbody"></div>`;
+ return q}
+function hintButton(q,bl){if(!bl.hint)return;const b=document.createElement('button');b.className='hintbtn';b.textContent='💡 hint';
+ const h=document.createElement('div');h.className='hint';h.hidden=true;h.innerHTML=md(bl.hint);
+ b.onclick=()=>h.hidden=!h.hidden;q.querySelector('.qbody').append(b,h)}
+function wireCheck(q,bl,ok,msg,ev){
+ const body=q.querySelector('.qbody');
+ let f=body.querySelector('.feed');
+ if(!f){f=document.createElement('div');f.className='feed';f.hidden=true;body.appendChild(f)}
+ if(ok){S.right++;combo++;S.best=Math.max(S.best,combo);
+  if(!S.done[bl.id])award(bl,bl.xp,ev);
+  q.classList.add('solved');f.hidden=false;f.className='feed good';f.textContent='✓ Correct. Onward.';
+  updateComboUI();updateBossBar();save()}
+ else{S.wrong++;if(combo>=4)toast('💔 combo lost');combo=0;updateComboUI();save();
+  beep('no');q.classList.remove('shake');void q.offsetWidth;q.classList.add('shake');
+  f.hidden=false;f.className='feed bad';f.textContent='✗ '+(msg||'Not yet — try again.')}}
+const clickCheck=q=>{const b=q.querySelector('.qrow .btn:not(.ghost)')||q.querySelector('.qrow .btn');if(b)b.click()};
+
+function renderQuest(bl,onSolved){
+ if(bl.k==='mcq'){const q=questShell(bl,'RECON');const body=q.querySelector('.qbody');
+  const p=document.createElement('div');p.className='qp';p.innerHTML=md(bl.q);body.appendChild(p);
+  const opts=document.createElement('div');opts.className='opts';let sel=-1;
+  bl.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=md(o);
+   b.onclick=()=>{if(S.done[bl.id])return;sel=i;opts.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')};
+   opts.appendChild(b)});
+  body.appendChild(opts);
+  const row=document.createElement('div');row.className='qrow';
+  const chk=document.createElement('button');chk.className='btn sm';chk.textContent='CHECK';
+  chk.onclick=ev=>{if(sel<0)return wireCheck(q,bl,false,'Pick an answer first.');
+   const ok=sel===Number(bl.ai);
+   opts.querySelectorAll('.opt').forEach((x,i)=>{x.classList.remove('right','wrong');
+    if(ok||S.done[bl.id]){if(i===Number(bl.ai))x.classList.add('right');else if(i===sel&&!ok)x.classList.add('wrong')}});
+   wireCheck(q,bl,ok,'That\u2019s not it — re-read the section above.',ev);
+   if(ok&&onSolved)setTimeout(onSolved,600)};
+  row.appendChild(chk);body.appendChild(row);hintButton(q,bl);return q}
+ if(bl.k==='fill'){const q=questShell(bl,'PATCH THE CODE');const body=q.querySelector('.qbody');
+  const p=document.createElement('div');p.className='qp';p.innerHTML=md(bl.q);body.appendChild(p);
+  const parts=bl.code.split('___');const box=document.createElement('div');box.className='fillcode';
+  const inputs=[];
+  parts.forEach((seg,i)=>{const s=document.createElement('span');s.innerHTML=esc(seg);box.appendChild(s);
+   if(i<parts.length-1){const inp=document.createElement('input');inp.className='blankin';inp.autocomplete='off';inp.placeholder='···';
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click()});
+    box.appendChild(inp);inputs.push(inp)}});
+  body.appendChild(box);
+  const row=document.createElement('div');row.className='qrow';
+  const chk=document.createElement('button');chk.className='btn sm';chk.textContent='COMPILE & CHECK';
+  chk.onclick=ev=>{const norm=s=>String(s).replace(/\s+/g,' ').replace(/;$/,'').trim();
+   let all=true;
+   inputs.forEach((inp,i)=>{let alts=bl.answers[i];alts=Array.isArray(alts)?alts:[alts];
+    const ok=alts.some(a=>typeof a==='string'&&norm(a)===norm(inp.value));
+    inp.classList.toggle('right',ok);inp.classList.toggle('wrong',!ok);if(!ok)all=false});
+   wireCheck(q,bl,all,'Some blanks are off — check spelling and types.',ev);
+   if(all&&onSolved)setTimeout(onSolved,600)};
+  row.appendChild(chk);body.appendChild(row);hintButton(q,bl);return q}
+ if(bl.k==='predict'){const q=questShell(bl,'PREDICT THE OUTPUT');const body=q.querySelector('.qbody');
+  const p=document.createElement('div');p.className='qp';p.innerHTML=md(bl.q);body.appendChild(p);
+  body.appendChild(codeBlock(bl.code,'read it like the compiler'));
+  const inp=document.createElement('input');inp.className='predin';inp.placeholder='exact output (or the error)…';
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click()});
+  body.appendChild(inp);
+  const row=document.createElement('div');row.className='qrow';
+  const chk=document.createElement('button');chk.className='btn sm';chk.textContent='CHECK PREDICTION';
+  chk.onclick=ev=>{const norm=s=>String(s).toLowerCase().replace(/\s+/g,' ').trim();
+   const ok=bl.expect.some(e=>norm(e)===norm(inp.value));
+   wireCheck(q,bl,ok,'Close? Compare whitespace and exact wording.',ev);
+   if(ok&&onSolved)setTimeout(onSolved,600)};
+  row.appendChild(chk);body.appendChild(row);hintButton(q,bl);return q}
+ if(bl.k==='type'){const q=questShell(bl,'⚔ CODE QUEST');const body=q.querySelector('.qbody');
+  const p=document.createElement('div');p.className='qp';p.innerHTML=md(bl.q);body.appendChild(p);
+  const ed=document.createElement('textarea');ed.className='editor';ed.spellcheck=false;ed.value=bl.starter;
+  ed.setAttribute('aria-label','Rust code editor');
+  ed.addEventListener('keydown',e=>{
+   if(e.key==='Tab'){e.preventDefault();const s=ed.selectionStart;ed.value=ed.value.slice(0,s)+'    '+ed.value.slice(ed.selectionEnd);ed.selectionStart=ed.selectionEnd=s+4}
+   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();(e.shiftKey?chk:run).click()}});
+  const con=document.createElement('div');con.className='console';con.innerHTML='<span class="cd">$ cargo run — Ctrl+Enter runs · Ctrl+Shift+Enter checks · #[test] fns run cargo-test style</span>';
+  body.append(ed,con);
+  const row=document.createElement('div');row.className='qrow';
+  const run=document.createElement('button');run.className='btn ghost sm';run.textContent='▶ RUN';
+  const chk=document.createElement('button');chk.className='btn sm';chk.textContent='⚔ CHECK QUEST';
+  let last={out:'',err:null};
+  const paint=()=>{con.innerHTML=last.err?`<span class="ce">${esc(last.err)}</span>${last.out?'\n'+esc(last.out):''}`
+   :(last.out?(esc(last.out).replace(/^(running \d+ tests|test .*|test result.*)$/gm,'<span class="ct">$1</span>')):'<span class="cd">(no output)</span>')};
+  run.onclick=()=>{last=runRust(ed.value);paint();if(last.err)beep('no')};
+  chk.onclick=ev=>{last=runRust(ed.value);paint();
+   const r=CK[bl.checker](ed.value,last.out||'',last.err);
+   wireCheck(q,bl,r.ok,r.msg,ev);
+   if(r.ok&&onSolved)setTimeout(onSolved,600)};
+  row.append(run,chk);body.appendChild(row);hintButton(q,bl);return q}
+ if(bl.k==='order'){const q=questShell(bl,'SEQUENCE IT');const body=q.querySelector('.qbody');
+  const p=document.createElement('div');p.className='qp';p.innerHTML=md(bl.q);body.appendChild(p);
+  const pool=document.createElement('div');pool.className='ordpool';
+  const ans=document.createElement('div');ans.className='ordans';
+  body.insertAdjacentHTML('beforeend','<div class="ordlbl">AVAILABLE — CLICK TO PLACE</div>');body.appendChild(pool);
+  body.insertAdjacentHTML('beforeend','<div class="ordlbl">YOUR SEQUENCE — CLICK TO RETURN</div>');body.appendChild(ans);
+  shuf(bl.lines.map((t,i)=>({t,i})),hash(bl.id)).forEach(item=>{
+   const c=document.createElement('button');c.className='ordchip';c.textContent=item.t;c.dataset.i=item.i;
+   c.onclick=()=>(c.parentElement===pool?ans:pool).appendChild(c);pool.appendChild(c)});
+  const row=document.createElement('div');row.className='qrow';
+  const chk=document.createElement('button');chk.className='btn sm';chk.textContent='CHECK ORDER';
+  chk.onclick=ev=>{const seq=[...ans.children].map(c=>+c.dataset.i);
+   const ok=seq.length===bl.lines.length&&seq.every((v,i)=>v===i);
+   wireCheck(q,bl,ok,'Think about what each stage NEEDS from the previous one.',ev);
+   if(ok&&onSolved)setTimeout(onSolved,600)};
+  row.appendChild(chk);body.appendChild(row);hintButton(q,bl);return q}
+ return document.createElement('div')}
+
+/* ================= router ================= */
+function route(){const h=location.hash;
+ if(h.startsWith('#/l/'))openLesson(h.slice(4));
+ else if(!$('#app').hidden)goMap()}
+window.addEventListener('hashchange',route);
+
+/* ================= badges modal ================= */
+$('#badgesBtn').onclick=()=>{const g=$('#bgrid');g.innerHTML='';
+ BADGES.forEach(b=>{const on=S.badges.includes(b.id);
+  g.insertAdjacentHTML('beforeend',`<div class="bdg ${on?'on':'off'}"><div class="bi">${b.ic}</div><div class="bn">${b.n}</div><div class="bd2">${b.d}</div></div>`)});
+ $('#badgeModal').hidden=false};
+$('#closeBadges').onclick=()=>$('#badgeModal').hidden=true;
+$('#badgeModal').onclick=e=>{if(e.target.id==='badgeModal')$('#badgeModal').hidden=true};
+
+/* ================= controls ================= */
+$('#soundBtn').onclick=()=>{S.snd=S.snd?0:1;save();updateHUD()};
+$('#resetBtn').onclick=()=>{if(confirm('Wipe ALL progress and start over from Hatchling?')){localStorage.removeItem(SKEY);location.reload()}};
+$('#logoHome').onclick=()=>{if(!$('#app').hidden)location.hash='#/map'};
+
+/* ================= embers ================= */
+if(!RM){const cv=$('#fx'),cx=cv.getContext('2d');let W,H;const ps=[];
+ const size=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};
+ size();addEventListener('resize',size);
+ for(let i=0;i<38;i++)ps.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.6,s:Math.random()*.35+.1,o:Math.random()*.5+.15,w:Math.random()*2});
+ (function tick(){cx.clearRect(0,0,W,H);
+  ps.forEach(p=>{p.y-=p.s;p.x+=Math.sin((p.y+p.w*100)/60)*.2;
+   if(p.y<-10){p.y=H+10;p.x=Math.random()*W}
+   cx.globalAlpha=p.o*(0.6+0.4*Math.sin(Date.now()/700+p.w*9));
+   cx.fillStyle=Math.random()<.9?'#ff6b2c':'#ffb347';
+   cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);cx.fill()});
+  cx.globalAlpha=1;requestAnimationFrame(tick)})()}
+
+/* ================= PWA ================= */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))
+ navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ================= boot ================= */
+const BOOTLINES=[
+ ['$ rustup update',''],
+ ['info: syncing stable toolchain … ✓','ok'],
+ ['$ cargo new your_future',''],
+ ['    Created binary (application) `your_future`','ok'],
+ ['$ cargo test',''],
+ ['error[E0425]: cannot find value `skills` in this scope','err'],
+ [' --> src/main.rs:2:20','err'],
+ ['help: enroll in RUSTFORGE to define it','help']];
+function typeBoot(){
+ const tb=$('#termBody');let li=0,ci=0;let cur=document.createElement('div');tb.appendChild(cur);
+ const caret=document.createElement('span');caret.className='caret';
+ const timer=setInterval(()=>{
+  if(li>=BOOTLINES.length){clearInterval(timer);revealBoot();return}
+  const[line,cls]=BOOTLINES[li];
+  if(ci===0&&cls)cur.className=cls;
+  if(ci<line.length){cur.textContent=line.slice(0,++ci);cur.appendChild(caret)}
+  else{li++;ci=0;cur=document.createElement('div');tb.appendChild(cur);cur.appendChild(caret)}},14);
+ return timer}
+function revealBoot(){
+ const totalEx=LESSONS.reduce((a,l)=>a+l.exIds.length,0);
+ $('#bootStats').innerHTML=`<span><em>${RANKS.length}</em> RANKS</span><span>·</span><span><em>${LESSONS.length}</em> QUESTS</span><span>·</span><span><em>${totalEx}</em> EXERCISES</span><span>·</span><span><em>${LESSONS.filter(l=>l.boss).length}</em> BOSSES</span>`;
+ $('#bootTitle').classList.add('on')}
+function enterApp(){$('#boot').style.opacity='0';$('#boot').style.transition='.5s';
+ setTimeout(()=>$('#boot').hidden=true,500);
+ $('#app').hidden=false;updateHUD();
+ if(location.hash.startsWith('#/l/'))route();else renderMap()}
+const bt=typeBoot();
+$('#beginBtn').onclick=enterApp;
+$('#skipBoot').onclick=()=>{clearInterval(bt);enterApp()};
+if(Object.keys(S.done).length>0)$('#beginBtn').textContent='▶ Continue training';
+</script>
+</body>
+</html>
